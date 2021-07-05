@@ -4,6 +4,8 @@ import 'package:softflow_app/Models/company_model.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Models/year_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
+import 'package:softflow_app/Screens/traffic_department_screen.dart';
+import '../Helpers/Snakebar.dart';
 
 class CoSelectionScreen extends StatefulWidget {
   @override
@@ -18,22 +20,43 @@ class _CoSelectionScreenState extends State<CoSelectionScreen> {
   late User user;
   var coList = []; // names of company
 
+  void handleContinue() {
+    if (user.co != '-1' && user.yr != '-1') {
+      // print(user.co);
+      // print(user.yr);
+      Navigator.of(context).pushNamed(TrafficDepartmentScreen.routeName);
+    }else{
+      showSnakeBar(context, "Error in setting Company name and year");
+    }
+  }
+
   void fetchCompany() async {
     user = Provider.of<MainProvider>(context, listen: false).user;
-    List<Company> list = await user.getCompany();
-    setState(() {
-      coList = list;
-    });
-    user.co = coList[0].id.toString();
-    fetchCoYear();
+    Map<String, dynamic> result = await user.getCompany();
+    if (result['message'] == 'success') {
+      List<Company> list = result['data'];
+      setState(() {
+        coList = list;
+      });
+      user.co = coList[0].id.toString();
+      fetchCoYear();
+    } else {
+      showSnakeBar(context, result['message']);
+    }
   }
 
   void fetchCoYear() async {
     user = Provider.of<MainProvider>(context, listen: false).user;
-    List<Year> list = await user.getYears();
-    setState(() {
-      _coYr = list;
-    });
+    Map<String, dynamic> result = await user.getYears();
+    if (result['message'] == 'success') {
+      List<Year> list = result['data'];
+      setState(() {
+        _coYr = list;
+      });
+      user.yr = list[list.length - 1].year.substring(1);
+    } else {
+      showSnakeBar(context, result['message']);
+    }
   }
 
   @override
@@ -111,23 +134,27 @@ class _CoSelectionScreenState extends State<CoSelectionScreen> {
                     _coYr.length == 0
                         ? CircularProgressIndicator()
                         : DropdownButton(
-                            value: _year == null ? _coYr[_coYr.length-1].year : _year,
+                            value: _year == null
+                                ? _coYr[_coYr.length - 1].year
+                                : _year,
                             items: _coYr
                                 .map((item) => DropdownMenuItem(
                                       child: FittedBox(
-                                        child: Text((item.year as String).substring(1)),
+                                        child: Text(
+                                            (item.year as String).substring(1)),
                                       ),
                                       value: item.year,
                                     ))
                                 .toList(),
                             onChanged: (value) {
                               setState(() {
+                                user.yr = (value as String).substring(1);
                                 _year = value;
                               });
                             },
                           ),
                     new ElevatedButton(
-                      onPressed: () => {},
+                      onPressed: handleContinue,
                       child: Text("Continue"),
                     )
                   ],

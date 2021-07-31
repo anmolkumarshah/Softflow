@@ -1,6 +1,7 @@
+
 class PartyName{
   String name;
-  String id;
+  String id; // it is account id acc_id
   PartyName({required this.id,required this.name});
 
   String showName(){
@@ -9,4 +10,7 @@ class PartyName{
   String getId(){
     return this.id;
   }
+
+
+
 }

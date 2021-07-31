@@ -66,4 +66,8 @@ class UrlGlobal {
   String getUrl() {
     return "${this.host}${this.questionMark()}${this.getP()}${this.ampersand()}${this.getP1()}${this.ampersand()}${this.getP2()}${this.ampersand()}${this.getLast()}";
   }
+
+  String fileUploadUrl(){
+    return '${this.host}';
+  }
 }

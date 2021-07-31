@@ -7,18 +7,22 @@ Future<TypeAheadField<Object>> _showAutoTextCompleteDropdown({
   required Function setStateCallback,
   required Function suggestionCallback,
   required bool autoFocus,
+  required TextEditingController controller,
+  bool enable = true,
 }) async {
-  // print(textCallback());
   return TypeAheadField(
     textFieldConfiguration: TextFieldConfiguration(
       autofocus: autoFocus,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          fontSize: 20,
+          // fontSize: 25,
         ),
         border: OutlineInputBorder(),
       ),
+      controller: controller,
+      enabled: enable,
+
     ),
     suggestionsCallback: (pattern) async {
       return await suggestionCallback(pattern);
@@ -32,6 +36,7 @@ Future<TypeAheadField<Object>> _showAutoTextCompleteDropdown({
       );
     },
     onSuggestionSelected: (suggestion) {
+      controller.text = textCallback(suggestion);
       setStateCallback(suggestion);
     },
     hideSuggestionsOnKeyboardHide: true,
@@ -47,6 +52,8 @@ additionalAutoComplete({
   suggestionCallback,
   label,
   autoFocus = false,
+   controller,
+  enable = true,
 }) {
   return name.getId() != '-1'
       ? Column(
@@ -63,14 +70,26 @@ additionalAutoComplete({
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  FittedBox(
-                    child: Text(
-                      text,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
+                  Row(
+                    children: [
+                      Text(
+                        text.toString().split(':')[0] + " : ",
+                        style: TextStyle(
+                          // fontSize: 18,
+                        ),
                       ),
-                    ),
+                     Text(
+                          text.toString().split(':')[1],
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            // fontSize: 18,
+                          ),
+                        ),
+                    ],
                   ),
+
                   IconButton(
                     onPressed: onPressCallback,
                     icon: Icon(Icons.settings_backup_restore),
@@ -90,6 +109,8 @@ additionalAutoComplete({
             setStateCallback: stateCallback,
             suggestionCallback: suggestionCallback,
             autoFocus: autoFocus,
+            controller: controller,
+            enable: enable,
           ),
           builder: (context, snapshot) {
             if (snapshot.hasData) {

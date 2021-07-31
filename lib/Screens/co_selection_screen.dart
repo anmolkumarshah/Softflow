@@ -4,8 +4,11 @@ import 'package:softflow_app/Models/company_model.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Models/year_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
-import 'package:softflow_app/Screens/traffic_department_screen.dart';
+import 'Supervisor/supervisor_screen.dart';
+import 'TrafficMaster/traffic_department_screen.dart';
+import 'UserMaster/user_master_screen.dart';
 import '../Helpers/Snakebar.dart';
+import 'Admin/admin_screen.dart';
 
 class CoSelectionScreen extends StatefulWidget {
   @override
@@ -22,10 +25,28 @@ class _CoSelectionScreenState extends State<CoSelectionScreen> {
 
   void handleContinue() {
     if (user.co != '-1' && user.yr != '-1') {
-      // print(user.co);
-      // print(user.yr);
       Navigator.of(context).pushNamed(TrafficDepartmentScreen.routeName);
-    }else{
+      switch (user.deptCd) {
+        case '0':
+          Navigator.of(context).pushReplacementNamed(AdminScreen.routeName);
+          break;
+        case '1':
+          Navigator.of(context)
+              .pushReplacementNamed(TrafficDepartmentScreen.routeName);
+          break;
+        case '2':
+          Navigator.of(context)
+              .pushReplacementNamed(SupervisorScreen.routeName);
+          break;
+        case '3':
+          Navigator.of(context)
+              .pushReplacementNamed(UserMasterScreen.routeName);
+          break;
+        default:
+          showSnakeBar(context, "Invalid user type");
+          break;
+      }
+    } else {
       showSnakeBar(context, "Error in setting Company name and year");
     }
   }
@@ -114,6 +135,9 @@ class _CoSelectionScreenState extends State<CoSelectionScreen> {
                                     ))
                                 .toList(),
                             onChanged: (value) {
+                              setState(() {
+                                _coYr = [];
+                              }); // for co name refresh and yr refresh
                               user.co = value.toString();
                               fetchCoYear();
                               setState(() {
@@ -153,10 +177,12 @@ class _CoSelectionScreenState extends State<CoSelectionScreen> {
                               });
                             },
                           ),
-                    new ElevatedButton(
-                      onPressed: handleContinue,
-                      child: Text("Continue"),
-                    )
+                    _coYr.length != 0
+                        ? ElevatedButton(
+                            onPressed: handleContinue,
+                            child: Text("Continue"),
+                          )
+                        : Text("")
                   ],
                 ),
               ],

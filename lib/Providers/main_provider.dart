@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../Models/user_model.dart';
 
 class MainProvider with ChangeNotifier {
-  User mainUser = new User(id: '-1', password: "-1");
+  User mainUser = new User(email: '-1', password: "-1");
 
-  void loginUpdate(User newUser) {
+  Map<String, List<XFile>> files = {'first': []};
+
+  Map<String, List<XFile>> getFile(){
+    return files;
+  }
+
+  void setFirst(list){
+    files['first'] = list;
+    notifyListeners();
+  }
+
+
+
+   void loginUpdate(User newUser) {
     this.mainUser = newUser;
-    print(this.mainUser);
+    mainUser.show();
     notifyListeners();
   }
 

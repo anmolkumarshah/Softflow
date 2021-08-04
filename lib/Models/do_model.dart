@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:core';
+import 'package:softflow_app/Helpers/getMethodHelperFunction.dart';
 import 'package:softflow_app/Models/url_model.dart';
-import 'package:softflow_app/Models/user_model.dart';
 
 class DO {
   String uid;
@@ -50,6 +50,7 @@ class DO {
   String drv_mobile;
   String desp_time;
   int desp_by;
+  String br_cd;
 
   DO({
     this.uid = '-1',
@@ -98,6 +99,7 @@ class DO {
     this.valid_till = "",
     this.Veh_intime = "",
     this.Wt = 0.0,
+    this.br_cd = '0',
   });
 
   void display() {
@@ -113,13 +115,14 @@ class DO {
     //   print(this.truck.getNo());
   }
 
-  static Future<Map<String, dynamic>> getAllUnAllotedDo(String pattern) async {
+  static Future<Map<String, dynamic>> getAllUnAllotedDo(
+      String pattern, String branch) async {
     final UrlGlobal urlObject = new UrlGlobal(
-      p2: "select * from domast where do_no like '%$pattern%' and (broker in (0,-1) and truckid in (0,-1))",
+      p2: "select * from domast where do_no like '%$pattern%' and (broker in (0,-1) and truckid in (0,-1)) and br_cd = $branch",
     );
     final url = urlObject.getUrl();
     try {
-      final result = await User.getMethod(url);
+      final result = await getMethod(url);
       final data = json.decode(result.body);
 
       final doList = (data as List<dynamic>)
@@ -170,6 +173,8 @@ class DO {
                 valid_till: record['valid_till'].toString(),
                 Veh_inby: record['Veh_inby'].toString(),
                 Veh_intime: record['Veh_intime'].toString(),
+                br_cd:
+                    record['br_cd'] == null ? '0' : record['br_cd'].toString(),
               ))
           .toList();
       return {"message": 'success', 'data': doList};
@@ -179,15 +184,20 @@ class DO {
     }
   }
 
-  static Future<Map<String, dynamic>> getAllDO(String pattern) async {
+  static Future<Map<String, dynamic>> getAllDO(String pattern,
+      {String branch = '0'}) async {
+    String query = "select * from domast where do_no like '%$pattern%'";
+    if (branch != '0' && branch != '1') {
+      query = "select * from domast where br_cd = $branch";
+    }
     final UrlGlobal urlObject = new UrlGlobal(
-      p2: "select * from domast where do_no like '%$pattern%'",
+      p2: query,
     );
     final url = urlObject.getUrl();
+    print(url);
     try {
-      final result = await User.getMethod(url);
+      final result = await getMethod(url);
       final data = json.decode(result.body);
-
       final doList = (data as List<dynamic>)
           .map((record) => new DO(
                 inddt: record['inddt'].toString().trim(),
@@ -236,6 +246,8 @@ class DO {
                 valid_till: record['valid_till'].toString(),
                 Veh_inby: record['Veh_inby'].toString(),
                 Veh_intime: record['Veh_intime'].toString(),
+                br_cd:
+                    record['br_cd'] == null ? '0' : record['br_cd'].toString(),
               ))
           .toList();
       return {"message": 'success', 'data': doList};
@@ -253,7 +265,7 @@ class DO {
     final url = urlObject.getUrl();
     print(url);
     try {
-      final result = await User.getMethod(url);
+      final result = await getMethod(url);
       final data = json.decode(result.body);
       final doList = (data as List<dynamic>)
           .map((record) => new DO(
@@ -303,13 +315,15 @@ class DO {
                 valid_till: record['valid_till'].toString(),
                 Veh_inby: record['Veh_inby'].toString(),
                 Veh_intime: record['Veh_intime'].toString(),
+                br_cd:
+                    record['br_cd'] == null ? '1' : record['br_cd'].toString(),
               ))
           .toList();
       return {"message": 'success', 'data': doList};
     } catch (e) {
       print(e);
       List<DO> list = [];
-      return {"message": "Error occurred while fetching DO", 'data': list };
+      return {"message": "Error occurred while fetching DO", 'data': list};
     }
   }
 
@@ -321,7 +335,7 @@ class DO {
         last: 'tblno=1767&cid=0&yr=0&xdt=04/01/2000&serno=0');
     try {
       final url = urlObject.getUrl();
-      final result = await User.getMethod(url);
+      final result = await getMethod(url);
       final data = json.decode(result.body);
       this.uid = data['uid'].toString();
     } catch (e) {
@@ -345,7 +359,7 @@ class DO {
     );
     try {
       final url = urlObject.getUrl();
-      final result = await User.getMethod(url);
+      final result = await getMethod(url);
       final data = json.decode(result.body);
       print(data);
       return {"message": data['status']};
@@ -373,7 +387,7 @@ class DO {
     );
     try {
       final url = urlObject.getUrl();
-      final result = await User.getMethod(url);
+      final result = await getMethod(url);
       final data = json.decode(result.body);
       print(data);
       return {"message": data['status']};
@@ -398,7 +412,7 @@ class DO {
     );
     try {
       final url = urlObject.getUrl();
-      final result = await User.getMethod(url);
+      final result = await getMethod(url);
       final data = json.decode(result.body);
       print(data);
       return {"message": data['status']};
@@ -423,7 +437,7 @@ class DO {
     );
     try {
       final url = urlObject.getUrl();
-      final result = await User.getMethod(url);
+      final result = await getMethod(url);
       final data = json.decode(result.body);
       print(data);
       return {"message": data['status']};
@@ -436,14 +450,14 @@ class DO {
     final query =
         """ insert into domast(uid,do_no,do_dt,acc_id,consignee,frmplc,toplc,
         frdt,todt,tmt,rt,deltmt,compl,doamt,place_rt,lias_rt,km_levl,shr_perc,
-        pono,itemnm,consrcd,consecd,indno,inddt,broker,truckid,Wt) 
+        pono,itemnm,consrcd,consecd,indno,inddt,broker,truckid,Wt, br_cd) 
         values ('${this.uid}','${this.do_no}','${this.do_dt}','${this.acc_id}',
         '${this.consignee}','${this.frmplc}',
         '${this.toplc}','${this.frdt}','${this.todt}',${this.tmt},${this.rt},
         ${this.deltmt},${this.compl},${this.doamt},${this.place_rt},${this.lias_rt},
         ${this.km_levl},${this.shr_perc},'${this.pono}','${this.itemnm}',
         ${this.consrcd},${this.consecd},'${this.indno}','${this.inddt}',
-        '${this.broker}','${this.truckid}',${this.Wt}) """;
+        '${this.broker}','${this.truckid}',${this.Wt},'${this.br_cd}' ) """;
     print(query);
     final UrlGlobal urlObject = new UrlGlobal(
       p2: query,
@@ -452,7 +466,7 @@ class DO {
     );
     try {
       final url = urlObject.getUrl();
-      final result = await User.getMethod(url);
+      final result = await getMethod(url);
       final data = json.decode(result.body);
       return {"message": data['status']};
     } catch (e) {

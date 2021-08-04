@@ -11,7 +11,7 @@ import 'package:softflow_app/Screens/Supervisor/truckInLoading.dart';
 import 'package:softflow_app/Screens/Supervisor/truckToReachScreen.dart';
 
 import '../../Widgets/option_tile_widget.dart';
-import '../login_screen.dart';
+import '../Common/login_screen.dart';
 
 class SupervisorScreen extends StatefulWidget {
   static const routeName = "/supervisorScreen";
@@ -65,7 +65,7 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
     userName = currentUser.name;
     year = currentUser.yr;
 
-    Map<String, dynamic> result = await currentUser.getCompany(query: """
+    Map<String, dynamic> result = await Company.getCompany(query: """
       select * from Co where Id = ${currentUser.co}
     """);
     if (result['message'] == 'success') {
@@ -94,7 +94,7 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
     user.show();
     return new Scaffold(
       appBar: new AppBar(
-        title: Text("Supervisor Screen"),
+        // title: Text("Supervisor Screen"),
         elevation: 0,
       ),
       endDrawer: Drawer(
@@ -137,12 +137,13 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
           ],
         ),
       ),
+      backgroundColor: Color(0xFFfaf3dd),
       body: Stack(
         children: [
           ClipPath(
             child: Container(
               width: double.infinity,
-              height: 370,
+              height: double.infinity,
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,
                 borderRadius: BorderRadius.only(
@@ -154,7 +155,7 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
                 padding: const EdgeInsets.all(10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -193,19 +194,22 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
                     _isLoading
                         ? LinearProgressIndicator()
                         : Row(
-                          children: [
-                            Icon(Icons.account_box_outlined, color: Colors.white,),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
+                            children: [
+                              Icon(
+                                Icons.account_box_outlined,
+                                color: Colors.white,
+                              ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Text(
                                 this.companyName,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                                 style: dataStyle,
                               ),
-                          ],
-                        ),
+                            ],
+                          ),
                     // Row(
                     //   mainAxisAlignment: MainAxisAlignment.start,
                     //   children: [
@@ -224,7 +228,10 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
                     // ),
                     Row(
                       children: [
-                        Icon(Icons.calendar_view_day, color: Colors.white,),
+                        Icon(
+                          Icons.calendar_view_day,
+                          color: Colors.white,
+                        ),
                         SizedBox(
                           width: 10,
                         ),
@@ -244,7 +251,6 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
-
               children: [
                 Container(
                   child: GridView(

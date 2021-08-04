@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:softflow_app/Helpers/dateFormatfromDataBase.dart';
-import '../Admin/do_entry_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:softflow_app/Models/user_model.dart';
+import 'package:softflow_app/Providers/main_provider.dart';
+import '../Common/do_entry_screen.dart';
 import 'package:softflow_app/Widgets/doItem.dart';
 import '../../Models/do_model.dart';
 
@@ -10,6 +12,8 @@ class TrafficMasterDoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final User currentUser =
+        Provider.of<MainProvider>(context, listen: false).user;
     return Scaffold(
       appBar: new AppBar(
         title: Text("Traffic Master DO Screen"),
@@ -23,13 +27,14 @@ class TrafficMasterDoScreen extends StatelessWidget {
                 border: OutlineInputBorder(), labelText: "Search by DO number"),
           ),
           suggestionsCallback: (pattern) async {
-            final result = await DO.getAllUnAllotedDo(pattern);
+            final result =
+                await DO.getAllUnAllotedDo(pattern, currentUser.deptCd);
             return result['data'];
           },
           itemBuilder: (context, suggestion) {
             final data = suggestion as DO;
             return DoItem(
-      receivedDO: data,
+              receivedDO: data,
             );
           },
           onSuggestionSelected: (suggestion) {
@@ -38,10 +43,10 @@ class TrafficMasterDoScreen extends StatelessWidget {
               arguments: {
                 'data': suggestion,
                 'heading': (suggestion as DO).do_no,
-                'enable': true,
-                'isTrafficMaster' : true,
-                'isAll' : false,
-                'isSupervisor' : false,
+                'enable': false,
+                'isTrafficMaster': false,
+                'isAll': false,
+                'isSupervisor': false,
               },
             );
           },

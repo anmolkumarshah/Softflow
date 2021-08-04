@@ -2,20 +2,18 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:softflow_app/Helpers/Snakebar.dart';
 import 'package:softflow_app/Helpers/TextFieldHelper.dart';
 import 'package:softflow_app/Helpers/captureImage.dart';
 import 'package:softflow_app/Helpers/dateFormatfromDataBase.dart';
-import 'package:softflow_app/Helpers/dateSelectorHelper.dart';
+import 'package:softflow_app/Models/branch_model.dart';
 import 'package:softflow_app/Models/do_model.dart';
 import 'package:softflow_app/Models/partyName_model.dart';
 import 'package:softflow_app/Models/product_model.dart';
 import 'package:softflow_app/Models/station_model.dart';
 import 'package:softflow_app/Models/truck_model.dart';
-import 'package:softflow_app/Models/url_model.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
 import 'package:intl/intl.dart';
@@ -107,7 +105,7 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
   // ------------------------------------------------------
 
   partySuggestion(pattern) async {
-    final result = await considerUser.getPartyName(
+    final result = await PartyName.getPartyName(
         considerUser.co, considerUser.yr, pattern, 'A5');
     if (result['message'] == 'success') {
       return (result['data'] as List<PartyName>);
@@ -162,7 +160,7 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
   // ------------------------------------------------------
 
   brokerPartySuggestion(pattern) async {
-    final result = await considerUser.getPartyName(
+    final result = await PartyName.getPartyName(
         considerUser.co, considerUser.yr, pattern, 'L5');
     if (result['message'] == 'success') {
       return (result['data'] as List<PartyName>);
@@ -193,7 +191,7 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
   // ------------------------------------------------------
 
   fromStationSuggestion(pattern) async {
-    final result = await considerUser.getStations(pattern);
+    final result = await Station.getStations(pattern);
     if (result['message'] == 'success') {
       return (result['data'] as List<Station>);
     } else {
@@ -224,7 +222,7 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
   // ------------------------------------------------------
 
   toStationSuggestion(pattern) async {
-    final result = await considerUser.getStations(pattern);
+    final result = await Station.getStations(pattern);
     if (result['message'] == 'success') {
       return (result['data'] as List<Station>);
     } else {
@@ -254,7 +252,7 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
   // ------------------------------------------------------
 
   truckSuggestion(pattern) async {
-    final result = await considerUser.getTrucks(considerUser.co, pattern);
+    final result = await Truck.getTrucks(considerUser.co, pattern);
     if (result['message'] == 'success') {
       return (result['data'] as List<Truck>);
     } else {
@@ -283,7 +281,7 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
   // ------------------------------------------------------
 
   productSuggestion(pattern) async {
-    final result = await considerUser.getProducts(considerUser.co, pattern);
+    final result = await Product.getProducts(considerUser.co, pattern);
     if (result['message'] == 'success') {
       return (result['data'] as List<Product>);
     } else {
@@ -326,24 +324,26 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
         _selectedProduct.name != '-1' &&
         _selectedProduct.id != '-1') {
       DO _madeDo = new DO(
-        do_no: _doController.value.text,
-        do_dt: _selectedDate.toString().split(" ")[0],
-        acc_id: _selectedParty.getId(),
-        consignee: _selectedConsignee.showName(),
-        frmplc: _stationFrom.showName(),
-        toplc: _stationTo.showName(),
-        frdt: _selectedDate.toString().split(" ")[0],
-        todt: _selectedDate.toString().split(" ")[0],
-        itemnm: _selectedProduct.showName(),
-        consrcd: _selectedConsecd.getId(),
-        consecd: _selectedConsignee.getId(),
-        inddt: _selectedDate.toString().split(" ")[0],
-        Wt: double.parse(_qtyController.value.text),
-      );
+          do_no: _doController.value.text,
+          do_dt: _selectedDate.toString().split(" ")[0],
+          acc_id: _selectedParty.getId(),
+          consignee: _selectedConsignee.showName(),
+          frmplc: _stationFrom.showName(),
+          toplc: _stationTo.showName(),
+          frdt: _selectedDate.toString().split(" ")[0],
+          todt: _selectedDate.toString().split(" ")[0],
+          itemnm: _selectedProduct.showName(),
+          consrcd: _selectedConsecd.getId(),
+          consecd: _selectedConsignee.getId(),
+          inddt: _selectedDate.toString().split(" ")[0],
+          Wt: double.parse(_qtyController.value.text),
+          br_cd: considerUser.deptCd == '0' || considerUser.deptCd == '1'
+              ? _selectedBranch
+              : considerUser.deptCd);
       // is user is traffic master
-      if(received['isAll']){
-    _madeDo.truckid = _selectedTruck.uid;
-    _madeDo.broker = _selectedBroker.id;
+      if (received['isAll']) {
+        _madeDo.truckid = _selectedTruck.uid;
+        _madeDo.broker = _selectedBroker.id;
         print(received['isAll']);
       }
       setState(() {
@@ -364,7 +364,6 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
 
   handleUpdate(DO oldDo) async {
     if (_doController.value.text != '' &&
-        // TODO : add qty check
         _qtyController.value.text != '' &&
         _selectedParty.name != '-1' &&
         _selectedParty.id != '-1' &&
@@ -410,11 +409,11 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
     }
   }
 
-  lock(receivedDo, {enable = false}) async {
+  lock(DO receivedDo, {enable = false}) async {
     setState(() {
       _isLoadingWhole = true;
     });
-    final partyList = await considerUser.getPartyName(
+    final partyList = await PartyName.getPartyName(
         considerUser.co, considerUser.yr, "", 'A5');
     final party = (partyList['data'] as List<PartyName>)
         .firstWhere((element) => element.id == receivedDo.acc_id);
@@ -424,20 +423,22 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
         .firstWhere((element) => element.id == receivedDo.consrcd);
     var broker;
     if (receivedDo.broker != '-1' && receivedDo.broker != '0') {
-      final brokerList = await considerUser.getPartyName(
+      final brokerList = await PartyName.getPartyName(
           considerUser.co, considerUser.yr, "", 'L5');
       broker = (brokerList['data'] as List<PartyName>)
           .firstWhere((element) => element.id == receivedDo.broker);
     }
     var truck;
     if (receivedDo.truckid != '-1' && receivedDo.truckid != '0') {
-      final truckList = await considerUser.getTrucks(considerUser.co, '');
+      final truckList = await Truck.getTrucks(considerUser.co, '');
       truck = (truckList['data'] as List<Truck>)
           .firstWhere((element) => element.uid == receivedDo.truckid);
     }
+    print("cd " + receivedDo.br_cd);
     setState(() {
       _isVehReached = int.parse(receivedDo.Veh_reached) < 1 ? false : true;
       _enable = enable;
+      _selectedBranch = receivedDo.br_cd == '0' ? '1' : receivedDo.br_cd;
       _selectedDate = dateFormatFromDataBase(receivedDo.do_dt);
       partyController = TextEditingController(text: party.showName());
       fromStationController = TextEditingController(text: receivedDo.frmplc);
@@ -451,6 +452,15 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
           text: truck != null ? truck.truckNo : "Not Set");
       _doController = TextEditingController(text: receivedDo.do_no);
       _qtyController = TextEditingController(text: receivedDo.Wt.toString());
+
+      _grnNo1 = TextEditingController(text: receivedDo.grn_no1);
+      _grnNo = TextEditingController(text: receivedDo.GRN_NO.toString());
+      _invNo = TextEditingController(text: receivedDo.INV_no);
+      _ewayNo = TextEditingController(text: receivedDo.EwayNo);
+      _ewayQrCode = TextEditingController(text: receivedDo.EwayQrcode);
+      _consignerGst = TextEditingController(text: receivedDo.Consignor_GST);
+      _drvName = TextEditingController(text: receivedDo.drv_name);
+      _drvMobile = TextEditingController(text: receivedDo.drv_mobile);
       //  -----------------------------------
       _selectedParty = new PartyName(id: party.id, name: party.name);
       _stationFrom = new Station(id: '010', name: receivedDo.frmplc);
@@ -494,10 +504,6 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
   }
 
   handleUpdateFile(DO oldDo) async {
-    // // Map<String, List<XFile>> files = Provider.of<MainProvider>(context, listen: false).getFile();
-    // File f = await getImageFileFromAssets('images/dd.jpg');
-    // final result = await User.fileUpload(considerUser.co, f);
-    // showSnakeBar(context, result);
     oldDo.grn_no1 = _grnNo1.value.text;
     oldDo.GRN_NO = int.parse(_grnNo.value.text);
     oldDo.INV_no = _invNo.value.text;
@@ -522,10 +528,26 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
     });
   }
 
+  List<Branch> _branchItems = [];
+  String _selectedBranch = '1';
+
+  getSet() async {
+    setState(() {
+      _isLoadingWhole = true;
+    });
+    final currentUser = Provider.of<MainProvider>(context, listen: false).user;
+    final branchResult = await Branch.getBranchItem(currentUser.co);
+    setState(() {
+      _branchItems = branchResult['data'];
+      _isLoadingWhole = false;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     DoEntryScreen.count = 0;
+    getSet();
   }
 
   @override
@@ -538,6 +560,7 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
       lock(receivedDo, enable: received['enable']);
       DoEntryScreen.count += 1;
     }
+    print(received['isTrafficMaster']);
     return new Scaffold(
       appBar: new AppBar(
         title: received['data'] != ""
@@ -554,6 +577,107 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
                 child: Form(
                   child: new ListView(
                     children: [
+                      received['isEntry']
+                          ? (considerUser.deptCd == '0' ||
+                                  considerUser.deptCd == '1'
+                              ? Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 15),
+                                      child: Text(
+                                        "Select Branch",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.all(20),
+                                      child: DropdownButton(
+                                        value: _selectedBranch,
+                                        items: _branchItems.map((Branch item) {
+                                          return DropdownMenuItem(
+                                            child: Text(item.name),
+                                            value: item.id,
+                                          );
+                                        }).toList(),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _selectedBranch = value.toString();
+                                          });
+                                        },
+
+                                        hint: Text("Select Branch"),
+                                        elevation: 8,
+                                        icon:
+                                            Icon(Icons.arrow_drop_down_circle),
+                                        iconEnabledColor:
+                                            Theme.of(context).accentColor,
+                                        // isExpanded: true,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "Branch",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Chip(
+                                          label: Text(
+                                        _branchItems
+                                            .firstWhere((element) =>
+                                                element.id ==
+                                                considerUser.deptCd)
+                                            .name,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                        ),
+                                      ))
+                                    ],
+                                  ),
+                                ))
+                          : (received['data'] as DO).br_cd != '0'
+                              ? Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "Branch",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Chip(
+                                          label: Text(
+                                        _branchItems
+                                            .firstWhere((element) =>
+                                                element.id ==
+                                                (received['data'] as DO).br_cd)
+                                            .name,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                        ),
+                                      ))
+                                    ],
+                                  ),
+                                )
+                              : SizedBox(
+                                  height: 0,
+                                ),
                       additionalAutoComplete(
                         text: "Party Name : ${_selectedParty.name}",
                         onPressCallback: additionalPartyOnPressCallback,
@@ -599,7 +723,6 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
                                 ? FittedBox(
                                     child: Text(
                                       DateFormat.yMMMMd()
-                                          .add_jms()
                                           .format(_selectedDate)
                                           .toString(),
                                       style: TextStyle(
@@ -966,12 +1089,16 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
                                       ),
                               ],
                             )
-                          : SizedBox(width: 0,),
+                          : SizedBox(
+                              width: 0,
+                            ),
                       SizedBox(
                         height: 10,
                       ),
                       !received['enable']
-                          ? SizedBox(width: 0,)
+                          ? SizedBox(
+                              width: 0,
+                            )
                           : received['isTrafficMaster']
                               ? ElevatedButton(
                                   onPressed: () =>

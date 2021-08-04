@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
 import '../Admin/all_do_screen.dart';
-import '../Admin/do_entry_screen.dart';
+import '../Common/do_entry_screen.dart';
 import '../Admin/registration_screen.dart';
 import '../TrafficMaster/traffic_master_do_screen.dart';
 

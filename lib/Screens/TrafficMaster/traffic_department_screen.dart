@@ -6,8 +6,8 @@ import 'package:softflow_app/Models/company_model.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
 import '../Admin/all_do_screen.dart';
-import '../Admin/do_entry_screen.dart';
-import '../login_screen.dart';
+import '../Common/do_entry_screen.dart';
+import '../Common/login_screen.dart';
 import 'traffic_master_do_screen.dart';
 
 import '../../Widgets/option_tile_widget.dart';
@@ -16,9 +16,9 @@ class TrafficDepartmentScreen extends StatefulWidget {
   static const routeName = "/trafficDepartmentScreen";
 
   @override
-  _TrafficDepartmentScreenState createState() => _TrafficDepartmentScreenState();
+  _TrafficDepartmentScreenState createState() =>
+      _TrafficDepartmentScreenState();
 }
-
 
 class _TrafficDepartmentScreenState extends State<TrafficDepartmentScreen> {
   TextStyle hiStyle = TextStyle(
@@ -65,7 +65,7 @@ class _TrafficDepartmentScreenState extends State<TrafficDepartmentScreen> {
     userName = currentUser.name;
     year = currentUser.yr;
 
-    Map<String, dynamic> result = await currentUser.getCompany(query: """
+    Map<String, dynamic> result = await Company.getCompany(query: """
       select * from Co where Id = ${currentUser.co}
     """);
     if (result['message'] == 'success') {
@@ -90,11 +90,11 @@ class _TrafficDepartmentScreenState extends State<TrafficDepartmentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<MainProvider>(context).user;
+    final user = Provider.of<MainProvider>(context, listen: false).user;
     user.show();
     return new Scaffold(
       appBar: new AppBar(
-        title: Text("Traffic Master Screen"),
+        // title: Text("Traffic Master Screen"),
         elevation: 0,
       ),
       endDrawer: Drawer(
@@ -137,12 +137,13 @@ class _TrafficDepartmentScreenState extends State<TrafficDepartmentScreen> {
           ],
         ),
       ),
+      backgroundColor: Color(0xFFfaf3dd),
       body: Stack(
         children: [
           ClipPath(
             child: Container(
               width: double.infinity,
-              height: 370,
+              height: double.infinity,
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,
                 borderRadius: BorderRadius.only(
@@ -154,7 +155,7 @@ class _TrafficDepartmentScreenState extends State<TrafficDepartmentScreen> {
                 padding: const EdgeInsets.all(10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     // Row(
                     //   crossAxisAlignment: CrossAxisAlignment.end,
@@ -193,19 +194,22 @@ class _TrafficDepartmentScreenState extends State<TrafficDepartmentScreen> {
                     _isLoading
                         ? LinearProgressIndicator()
                         : Row(
-                      children: [
-                        Icon(Icons.account_box_outlined, color: Colors.white,),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Text(
-                          this.companyName,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: dataStyle,
-                        ),
-                      ],
-                    ),
+                            children: [
+                              Icon(
+                                Icons.account_box_outlined,
+                                color: Colors.white,
+                              ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Text(
+                                this.companyName,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: dataStyle,
+                              ),
+                            ],
+                          ),
                     // Row(
                     //   mainAxisAlignment: MainAxisAlignment.start,
                     //   children: [
@@ -224,7 +228,10 @@ class _TrafficDepartmentScreenState extends State<TrafficDepartmentScreen> {
                     // ),
                     Row(
                       children: [
-                        Icon(Icons.calendar_view_day, color: Colors.white,),
+                        Icon(
+                          Icons.calendar_view_day,
+                          color: Colors.white,
+                        ),
                         SizedBox(
                           width: 10,
                         ),
@@ -256,16 +263,17 @@ class _TrafficDepartmentScreenState extends State<TrafficDepartmentScreen> {
                           'data': "",
                           'enable': true,
                           'isTrafficMaster': false,
-                          'isAll' : true,
-                          'isSupervisor' : false,
+                          'isAll': true,
+                          'isSupervisor': false,
+                          'isEntry': true,
                         },
                       ),
                       new OptionWidget(
-                        text: "All D.O.",
+                        text: "D.O. Listing",
                         routeName: AllDoScreen.routeName,
                       ),
                       new OptionWidget(
-                        text: "Traffic Master D.O.",
+                        text: "Truck Not Alloted",
                         routeName: TrafficMasterDoScreen.routeName,
                       ),
                     ],

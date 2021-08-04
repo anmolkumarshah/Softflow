@@ -1,18 +1,8 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:softflow_app/Helpers/Snakebar.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Screens/Admin/registration_screen.dart';
-
-class RandomColorModel {
-  Random random = Random();
-
-  Color getColor() {
-    return Color.fromARGB(random.nextInt(300), random.nextInt(300),
-        random.nextInt(200), random.nextInt(300));
-  }
-}
+import 'package:softflow_app/Widgets/userTile.dart';
 
 class AddUserScreen extends StatefulWidget {
   static const routeName = "/add_user_screen";
@@ -23,6 +13,7 @@ class AddUserScreen extends StatefulWidget {
 
 class _AddUserScreenState extends State<AddUserScreen> {
   List<User> items = [];
+  List<User> toShowItems = [];
   bool _isLoading = false;
 
   getAndSet() async {
@@ -33,6 +24,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
     if (result['message'] == 'success') {
       setState(() {
         items = result['data'];
+        toShowItems = items;
         _isLoading = false;
       });
     } else {
@@ -43,57 +35,72 @@ class _AddUserScreenState extends State<AddUserScreen> {
     }
   }
 
+  handleSearch(String value) {
+    List<User> temp = items
+        .where((element) =>
+            element.name.toLowerCase().contains(value.toLowerCase()) ||
+            element.email.toLowerCase().contains(value.toLowerCase()) ||
+            element.mobile.toLowerCase().contains(value.toLowerCase()))
+        .toList();
+    setState(() {
+      toShowItems = temp;
+    });
+  }
+
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     getAndSet();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Text("User Listing"),
+      ),
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : GridView.count(
-              crossAxisCount: 2,
-              childAspectRatio: (2 / 1),
-              crossAxisSpacing: 5,
-              mainAxisSpacing: 5,
-              //physics:BouncingScrollPhysics(),
-              padding: EdgeInsets.all(10.0),
-              children: items
-                  .map(
-                    (data) => GestureDetector(
-                        onTap: () {},
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-
-                          //  margin:EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                          //color:data.color,
-                          color: RandomColorModel().getColor(),
-                          child: Column(
-                            children: [
-                              // Icon(
-                              //   data.icon,
-                              //   size: 25,
-                              //   color: Colors.black,
-                              // ),
-                              Text('data.title',
-                                  style: TextStyle(
-                                      fontSize: 18, color: Colors.black),
-                                  textAlign: TextAlign.center)
-                            ],
-                          ),
-                        )),
-                  )
-                  .toList(),
+          : Column(
+              children: [
+                Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    onChanged: (value) => handleSearch(value),
+                    initialValue: "",
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Search User',
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () => getAndSet(),
+                    child: GridView.count(
+                      crossAxisCount: 1,
+                      childAspectRatio: (3.2),
+                      crossAxisSpacing: 5,
+                      mainAxisSpacing: 5,
+                      physics: BouncingScrollPhysics(),
+                      padding: EdgeInsets.all(8.0),
+                      children:
+                          toShowItems.map((data) => UserTile(data)).toList(),
+                    ),
+                  ),
+                ),
+              ],
             ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Theme.of(context).accentColor,
         onPressed: () {
-          Navigator.of(context).pushNamed(RegistrationScreen.routeName);
+          Navigator.of(context)
+              .pushNamed(RegistrationScreen.routeName, arguments: {
+            'data': "",
+          });
         },
         child: Icon(Icons.add),
       ),

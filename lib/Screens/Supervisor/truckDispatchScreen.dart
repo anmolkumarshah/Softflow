@@ -6,7 +6,6 @@ import 'package:softflow_app/Providers/main_provider.dart';
 import '../../Widgets/tileWidget.dart';
 
 class TruckDispatchScreen extends StatefulWidget {
-  @override
   static const routeName = "/truckDispatchScreen";
 
   @override
@@ -27,7 +26,7 @@ class _TruckDispatchScreenState extends State<TruckDispatchScreen> {
         
         select * from domast where acc_id in (${currentUser.acc_id}, 
             ${currentUser.acc_id1}, ${currentUser.acc_id2}) and Veh_reached
-             = 'true' and compl = 'false'
+             = 'true' and compl = 'false' and br_cd = ${currentUser.deptCd}
                 
         """),
           builder: (context, snapshot) {
@@ -36,7 +35,7 @@ class _TruckDispatchScreenState extends State<TruckDispatchScreen> {
             }
             if (snapshot.connectionState == ConnectionState.done) {
               final List<DO> data =
-              (snapshot.data as Map<String, dynamic>)['data'];
+                  (snapshot.data as Map<String, dynamic>)['data'];
               if (data.length < 1) {
                 return Center(
                   child: Text("List is Empty"),
@@ -60,4 +59,3 @@ class _TruckDispatchScreenState extends State<TruckDispatchScreen> {
         ));
   }
 }
-

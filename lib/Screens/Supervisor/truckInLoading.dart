@@ -3,7 +3,7 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:provider/provider.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
-import '../Admin/do_entry_screen.dart';
+import '../Common/do_entry_screen.dart';
 import 'package:softflow_app/Widgets/doItem.dart';
 import '../../Models/do_model.dart';
 
@@ -33,7 +33,7 @@ class TruckInLoading extends StatelessWidget {
             select * from domast where acc_id in (${currentUser.acc_id}, 
             ${currentUser.acc_id1}, ${currentUser.acc_id2}) and Veh_reached
              = 'true' and compl = 'false' and do_no like 
-            '%$pattern%'
+            '%$pattern%' and br_cd = ${currentUser.deptCd}
             
             """);
             return result['data'];
@@ -52,7 +52,7 @@ class TruckInLoading extends StatelessWidget {
               'enable': false,
               'isTrafficMaster': false,
               'isAll': true,
-              'isSupervisor' : true,
+              'isSupervisor': true,
             });
           },
           hideSuggestionsOnKeyboardHide: false,

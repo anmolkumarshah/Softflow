@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class OptionWidget extends StatelessWidget {
   String text;
   var routeName;
@@ -16,14 +17,14 @@ class OptionWidget extends StatelessWidget {
       child: new Container(
         decoration: new BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          gradient: LinearGradient(
-            colors: [
-    Colors.pinkAccent,
-              Theme.of(context).accentColor,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          //       gradient: LinearGradient(
+          //         colors: [
+          // Colors.pinkAccent,
+          //           Theme.of(context).accentColor,
+          //         ],
+          //         begin: Alignment.topLeft,
+          //         end: Alignment.bottomRight,
+          //       ),
           color: Theme.of(context).accentColor,
           boxShadow: [
             // BoxShadow(

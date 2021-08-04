@@ -4,11 +4,11 @@ import 'package:softflow_app/Models/company_model.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Models/year_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
-import 'Supervisor/supervisor_screen.dart';
-import 'TrafficMaster/traffic_department_screen.dart';
-import 'UserMaster/user_master_screen.dart';
-import '../Helpers/Snakebar.dart';
-import 'Admin/admin_screen.dart';
+import '../Supervisor/supervisor_screen.dart';
+import '../TrafficMaster/traffic_department_screen.dart';
+import '../UserMaster/user_master_screen.dart';
+import '../../Helpers/Snakebar.dart';
+import '../Admin/admin_screen.dart';
 
 class CoSelectionScreen extends StatefulWidget {
   @override
@@ -18,6 +18,7 @@ class CoSelectionScreen extends StatefulWidget {
 
 class _CoSelectionScreenState extends State<CoSelectionScreen> {
   late var _value = coList.length > 0 ? coList[0].id : 1;
+  // ignore: avoid_init_to_null
   late var _year = null;
   var _coYr = [];
   late User user;
@@ -26,7 +27,7 @@ class _CoSelectionScreenState extends State<CoSelectionScreen> {
   void handleContinue() {
     if (user.co != '-1' && user.yr != '-1') {
       Navigator.of(context).pushNamed(TrafficDepartmentScreen.routeName);
-      switch (user.deptCd) {
+      switch (user.deptCd1) {
         case '0':
           Navigator.of(context).pushReplacementNamed(AdminScreen.routeName);
           break;
@@ -53,7 +54,7 @@ class _CoSelectionScreenState extends State<CoSelectionScreen> {
 
   void fetchCompany() async {
     user = Provider.of<MainProvider>(context, listen: false).user;
-    Map<String, dynamic> result = await user.getCompany();
+    Map<String, dynamic> result = await Company.getCompany();
     if (result['message'] == 'success') {
       List<Company> list = result['data'];
       setState(() {
@@ -68,7 +69,7 @@ class _CoSelectionScreenState extends State<CoSelectionScreen> {
 
   void fetchCoYear() async {
     user = Provider.of<MainProvider>(context, listen: false).user;
-    Map<String, dynamic> result = await user.getYears();
+    Map<String, dynamic> result = await Year.getYears(co: user.co);
     if (result['message'] == 'success') {
       List<Year> list = result['data'];
       setState(() {

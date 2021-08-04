@@ -6,7 +6,6 @@ import 'package:softflow_app/Providers/main_provider.dart';
 import '../../Widgets/tileWidget.dart';
 
 class TruckToReachScreen extends StatefulWidget {
-  @override
   static const routeName = "/truckToReachScreen";
 
   @override
@@ -27,7 +26,7 @@ class _TruckToReachScreenState extends State<TruckToReachScreen> {
         
         select * from domast where acc_id in (${currentUser.acc_id}, 
             ${currentUser.acc_id1}, ${currentUser.acc_id2}) and Veh_reached
-             = 'false' and broker != -1 and truckid != -1
+             = 'false' and broker != -1 and truckid != -1 and br_cd = ${currentUser.deptCd}
                 
         """),
           builder: (context, snapshot) {
@@ -60,4 +59,3 @@ class _TruckToReachScreenState extends State<TruckToReachScreen> {
         ));
   }
 }
-

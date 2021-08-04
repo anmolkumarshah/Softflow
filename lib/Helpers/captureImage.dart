@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
 import 'dart:io';
 
-import 'package:softflow_app/Screens/image_viewer_screen.dart';
+import 'package:softflow_app/Screens/Common/image_viewer_screen.dart';
 
 class CaptureImage extends StatefulWidget {
   @override
@@ -43,7 +43,7 @@ class _CaptureImageState extends State<CaptureImage> {
       width: double.infinity,
       child: _isTaken
           ? Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
                   height: 5,
@@ -88,7 +88,6 @@ class _CaptureImageState extends State<CaptureImage> {
                 ),
                 Row(
                   children: [
-
                     ElevatedButton(
                       child: Text(_image.length > 0 ? "Add More" : "Capture"),
                       onPressed: () => getImage(context),

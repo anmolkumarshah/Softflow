@@ -6,6 +6,7 @@ import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:multi_select_flutter/util/multi_select_list_type.dart';
 import 'package:provider/provider.dart';
 import 'package:softflow_app/Helpers/Snakebar.dart';
+import 'package:softflow_app/Helpers/typeAccountHelper.dart';
 import 'package:softflow_app/Models/branch_model.dart';
 import 'package:softflow_app/Models/partyName_model.dart';
 import 'package:softflow_app/Models/station_model.dart';
@@ -34,13 +35,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   List<PartyName> _selectedPartyNames = [];
   List<Station> _selectedStationName = [];
 
-  TextEditingController _nameController =  TextEditingController(text: "");
-  TextEditingController _emailController =  TextEditingController(text: "");
-  TextEditingController _mobileController =  TextEditingController(text: "");
-  TextEditingController _passwordController =  TextEditingController(text: "");
+  List<PartyName> _tempPartyNames = [];
+  List<Station> _tempStationName = [];
+
+  TextEditingController _nameController = TextEditingController(text: "");
+  TextEditingController _emailController = TextEditingController(text: "");
+  TextEditingController _mobileController = TextEditingController(text: "");
+  TextEditingController _passwordController = TextEditingController(text: "");
 
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   int _value = 0;
+  int initCount = 0;
+  bool _isEdit = false;
+  bool _toChange = false;
   List<int> items = [0, 1, 2, 3];
   List<Branch> _branchItems = [];
   String _selectedBranch = '1';
@@ -50,6 +57,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   // USER IS NOT A CLASS / OBJECT HERE BUT JUST A MAP OF VALUES
   final user = {
+    "id": "",
     "name": "",
     "email": "",
     "mobile": "",
@@ -61,23 +69,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     "station": "-1",
     "station1": "-1",
     "station2": "-1",
-    "branch" : "",
+    "branch": "",
   };
 
-  typeAccount(value) {
-    switch (value) {
-      case 0:
-        return "Admin";
-      case 1:
-        return "Traffic Master";
-      case 2:
-        return "Supervisor";
-      case 3:
-        return "User Account";
-    }
-  }
-
-  handleSubmit() async {
+  handleSubmit({bool isUpdate = false}) async {
     setState(() {
       _isLoading = true;
     });
@@ -112,7 +107,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             user['station1'] = _selectedStationName[1].id;
             user['station2'] = _selectedStationName[2].id;
 
-            final result = await User.addNewUser(user);
+            final result = await User.addNewUser(user, isUpdate: isUpdate);
             if (result['message'] == 'success') {
               showSnakeBar(context, "New User added successfully");
               setState(() {
@@ -131,7 +126,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             _formKey.currentState!.save();
             user['type'] = _value;
             user['branch'] = _selectedBranch;
-            final result = await User.addNewUser(user);
+            final result = await User.addNewUser(user, isUpdate: isUpdate);
             if (result['message'] == 'success') {
               showSnakeBar(context, "New User added successfully");
               setState(() {
@@ -146,22 +141,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           }
       }
     } else {
-      showSnakeBar(context, "Error in adding new user");
+      showSnakeBar(context, "Error");
       setState(() {
         _isLoading = false;
       });
     }
   }
 
+  handleUpdate(User userItem) {}
+
   getSet() async {
     setState(() {
       _isWholeLoading = true;
     });
-    final currentUser = Provider.of<MainProvider>(context).user;
+    final currentUser = Provider.of<MainProvider>(context, listen: false).user;
     final branchResult = await Branch.getBranchItem(currentUser.co);
-    final result = await currentUser.getPartyName(
-        currentUser.co, currentUser.yr, '', 'A5');
-    final result2 = await currentUser.getStations("");
+    final result =
+        await PartyName.getPartyName(currentUser.co, currentUser.yr, '', 'A5');
+    final result2 = await Station.getStations("");
     setState(() {
       _branchItems = branchResult['data'];
       _partyNames = result['data'] as List<PartyName>;
@@ -170,17 +167,62 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
   }
 
+  handleChangeStaPar() async {
+    setState(() {
+      _toChange = true;
+    });
+  }
+
+  lock(User userItem) async {
+    print("Yes");
+    initCount++;
+    _nameController = TextEditingController(text: userItem.name);
+    _emailController = TextEditingController(text: userItem.email);
+    _mobileController = TextEditingController(text: userItem.mobile);
+    _passwordController = TextEditingController(text: userItem.password);
+    user['id'] = userItem.id;
+    List<PartyName> tempPartyList = _partyNames
+        .where((element) =>
+            element.id == userItem.acc_id ||
+            element.id == userItem.acc_id1 ||
+            element.id == userItem.acc_id2)
+        .toList();
+    List<Station> tempStationList = _stationNames
+        .where((element) =>
+            element.id == userItem.station ||
+            element.id == userItem.station1 ||
+            element.id == userItem.station2)
+        .toList();
+    setState(() {
+      _isEdit = true;
+      _selectedBranch = userItem.deptCd != '0' ? userItem.deptCd : '1';
+      _value = userItem.deptCd1 != '-1' ? int.parse(userItem.deptCd1) : 0;
+      if (userItem.deptCd1 == '2') {
+        _isSupervisor = true;
+        _tempPartyNames = tempPartyList;
+        _tempStationName = tempStationList;
+        _selectedPartyNames = _tempPartyNames;
+        _selectedStationName = _tempStationName;
+      }
+    });
+  }
+
   @override
   void didChangeDependencies() {
-    getSet();
     super.didChangeDependencies();
+    getSet();
   }
 
   @override
   Widget build(BuildContext context) {
+    final received =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    if (received['data'] != "" && initCount == 0) {
+      lock(received['data']);
+    }
     return Scaffold(
       appBar: AppBar(
-        title: Text("Registration"),
+        title: Text("Add New User"),
       ),
       body: _isWholeLoading
           ? Center(
@@ -253,7 +295,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         height: 8,
                       ),
                       TextFormField(
-                        controller: _passwordController,
+                          enabled: !_isEdit,
+                          controller: _passwordController,
                           onSaved: (value) {
                             user['password'] = value.toString();
                           },
@@ -282,9 +325,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(left: 15),
-                            child: Text("Select Branch",style: TextStyle(
-                              fontSize: 18,
-                            ),),
+                            child: Text(
+                              "Select Branch",
+                              style: TextStyle(
+                                fontSize: 18,
+                              ),
+                            ),
                           ),
                           Container(
                             padding: EdgeInsets.all(20),
@@ -315,9 +361,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(left: 15),
-                            child: Text("Select Role",style: TextStyle(
-                              fontSize: 18,
-                            ),),
+                            child: Text(
+                              "Select Role",
+                              style: TextStyle(
+                                fontSize: 18,
+                              ),
+                            ),
                           ),
                           Container(
                             padding: EdgeInsets.all(20),
@@ -351,104 +400,157 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ],
                       ),
                       _isSupervisor
-                          ? Column(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                    border: Border.all(
-                                      color: Colors.grey,
-                                    ),
-                                  ),
+                          ? _isEdit && !_toChange
+                              ? Padding(
+                                  padding: const EdgeInsets.all(15.0),
                                   child: Column(
-                                    children: <Widget>[
-                                      MultiSelectBottomSheetField(
-                                        initialChildSize: 0.4,
-                                        listType: MultiSelectListType.LIST,
-                                        searchable: true,
-                                        buttonText: Text("Select 3 Parties"),
-                                        title: Text("Party Names"),
-                                        items: _items,
-                                        onConfirm: (values) {
-                                          values.forEach((element) {
-                                            _selectedPartyNames
-                                                .add(element as PartyName);
-                                          });
-                                        },
-                                        chipDisplay: MultiSelectChipDisplay(
-                                          textStyle:
-                                              TextStyle(color: Colors.black),
-                                          onTap: (value) {
-                                            setState(() {
-                                              _selectedPartyNames.remove(value);
-                                            });
-                                          },
-                                        ),
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Selected Parties",
+                                        style: TextStyle(fontSize: 18),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                    border: Border.all(
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    children: <Widget>[
-                                      MultiSelectBottomSheetField(
-                                        initialChildSize: 0.4,
-                                        listType: MultiSelectListType.LIST,
-                                        searchable: true,
-                                        buttonText: Text("Select 3 Stations"),
-                                        title: Text("Stations Names"),
-                                        items: _fromStationItems,
-                                        onConfirm: (values) {
-                                          if (values.length > 0) {
-                                            List<Station> temp = [];
-                                            values.forEach((element) {
-                                              temp.add(element as Station);
-                                            });
-                                            setState(() {
-                                              _selectedStationName = temp;
-                                            });
-                                          }
-                                        },
-                                        chipDisplay: MultiSelectChipDisplay(
-                                          textStyle:
-                                              TextStyle(color: Colors.black),
-                                          onTap: (value) {
-                                            print((value as Station).id);
-                                            setState(() {
-                                              _selectedPartyNames.remove(
-                                                  (value as Station).id);
-                                            });
-                                          },
-                                        ),
+                                      Wrap(
+                                        direction: Axis.horizontal,
+                                        spacing: 5,
+                                        children: _tempPartyNames
+                                            .map((e) =>
+                                                Chip(label: Text(e.name)))
+                                            .toList(),
                                       ),
+                                      SizedBox(
+                                        height: 20,
+                                      ),
+                                      Text(
+                                        "Selected Stations",
+                                        style: TextStyle(fontSize: 18),
+                                      ),
+                                      Wrap(
+                                        direction: Axis.horizontal,
+                                        spacing: 5,
+                                        children: _tempStationName
+                                            .map((e) =>
+                                                Chip(label: Text(e.name)))
+                                            .toList(),
+                                      ),
+                                      Center(
+                                        child: TextButton(
+                                            onPressed: handleChangeStaPar,
+                                            child: Text(
+                                                "Change Parties and Stations")),
+                                      )
                                     ],
                                   ),
                                 )
-                              ],
-                            )
+                              : Column(
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(5),
+                                        border: Border.all(
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        children: <Widget>[
+                                          MultiSelectBottomSheetField(
+                                            initialChildSize: 0.4,
+                                            listType: MultiSelectListType.LIST,
+                                            searchable: true,
+                                            buttonText:
+                                                Text("Select 3 Parties"),
+                                            title: Text("Party Names"),
+                                            items: _items,
+                                            onConfirm: (values) {
+                                              values.forEach((element) {
+                                                _selectedPartyNames
+                                                    .add(element as PartyName);
+                                              });
+                                            },
+                                            chipDisplay: MultiSelectChipDisplay(
+                                              textStyle: TextStyle(
+                                                  color: Colors.black),
+                                              onTap: (value) {},
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(5),
+                                        border: Border.all(
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        children: <Widget>[
+                                          MultiSelectBottomSheetField(
+                                            initialChildSize: 0.4,
+                                            listType: MultiSelectListType.LIST,
+                                            searchable: true,
+                                            buttonText:
+                                                Text("Select 3 Stations"),
+                                            title: Text("Stations Names"),
+                                            items: _fromStationItems,
+                                            onConfirm: (values) {
+                                              if (values.length > 0) {
+                                                List<Station> temp = [];
+                                                values.forEach((element) {
+                                                  temp.add(element as Station);
+                                                });
+                                                setState(() {
+                                                  _selectedStationName = temp;
+                                                });
+                                              }
+                                            },
+                                            chipDisplay: MultiSelectChipDisplay(
+                                              textStyle: TextStyle(
+                                                  color: Colors.black),
+                                              onTap: (value) {
+                                                print((value as Station).id);
+                                                setState(() {
+                                                  _selectedPartyNames
+                                                      .remove((value).id);
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                )
                           : SizedBox(
                               width: 0,
                             ),
-                      ElevatedButton(
-                        onPressed: handleSubmit,
-                        child: _isLoading
-                            ? Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Text("Add New User"),
-                      )
+                      _isEdit
+                          ? ElevatedButton(
+                              onPressed: () => handleSubmit(isUpdate: true),
+                              child: _isLoading
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : Text("Update User"),
+                            )
+                          : ElevatedButton(
+                              onPressed: handleSubmit,
+                              child: _isLoading
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : Text("Add New User"),
+                            )
                     ],
                   ),
                 ),

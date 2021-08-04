@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:softflow_app/Models/do_model.dart';
-import 'package:softflow_app/Models/user_model.dart';
+import 'package:softflow_app/Models/truck_model.dart';
 
+// ignore: must_be_immutable
 class TileWidget extends StatefulWidget {
   @override
   _TileWidgetState createState() => _TileWidgetState();
@@ -115,7 +116,8 @@ class _TileWidgetState extends State<TileWidget> {
               ],
             ),
             title: FutureBuilder(
-              future: User.getTruckNoById(widget.co, widget.receivedDo.truckid),
+              future:
+                  Truck.getTruckNoById(widget.co, widget.receivedDo.truckid),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Column(

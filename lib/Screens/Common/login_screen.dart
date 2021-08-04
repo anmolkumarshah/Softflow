@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:provider/provider.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
-import '../Helpers/Snakebar.dart';
-import '../Screens/co_selection_screen.dart';
-import '../Models/user_model.dart';
+import '../../Helpers/Snakebar.dart';
+import 'co_selection_screen.dart';
+import '../../Models/user_model.dart';
 
 class LoginScreen extends StatefulWidget {
   @override

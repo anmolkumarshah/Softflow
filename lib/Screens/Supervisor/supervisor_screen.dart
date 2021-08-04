@@ -9,9 +9,8 @@ import 'package:softflow_app/Providers/main_provider.dart';
 import 'package:softflow_app/Screens/Supervisor/truckDispatchScreen.dart';
 import 'package:softflow_app/Screens/Supervisor/truckInLoading.dart';
 import 'package:softflow_app/Screens/Supervisor/truckToReachScreen.dart';
-
-import '../../Widgets/option_tile_widget.dart';
-import '../Common/login_screen.dart';
+import 'package:softflow_app/Widgets/drawerContent.dart';
+import '../../Widgets/MainScreenTile/option_tile_widget.dart';
 
 class SupervisorScreen extends StatefulWidget {
   static const routeName = "/supervisorScreen";
@@ -97,46 +96,7 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
         // title: Text("Supervisor Screen"),
         elevation: 0,
       ),
-      endDrawer: Drawer(
-        child: ListView(
-          // Important: Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).accentColor,
-              ),
-              child: Text('Drawer Header'),
-            ),
-            ListTile(
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.logout_rounded,
-                    size: 40,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    "Logout",
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
-                    ),
-                  )
-                ],
-              ),
-              onTap: () {
-                Navigator.of(context).pushNamed(LoginScreen.routeName);
-              },
-            ),
-          ],
-        ),
-      ),
+      endDrawer: DrawerContent(),
       backgroundColor: Color(0xFFfaf3dd),
       body: Stack(
         children: [

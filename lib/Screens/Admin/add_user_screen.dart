@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:softflow_app/Helpers/Snakebar.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Screens/Admin/registration_screen.dart';
-import 'package:softflow_app/Widgets/userTile.dart';
+import 'package:softflow_app/Widgets/User/userTile.dart';
 
 class AddUserScreen extends StatefulWidget {
   static const routeName = "/add_user_screen";

@@ -17,23 +17,8 @@ class OptionWidget extends StatelessWidget {
       child: new Container(
         decoration: new BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          //       gradient: LinearGradient(
-          //         colors: [
-          // Colors.pinkAccent,
-          //           Theme.of(context).accentColor,
-          //         ],
-          //         begin: Alignment.topLeft,
-          //         end: Alignment.bottomRight,
-          //       ),
           color: Theme.of(context).accentColor,
-          boxShadow: [
-            // BoxShadow(
-            //   color: Colors.grey.withOpacity(0.5),
-            //   spreadRadius: 3,
-            //   blurRadius: 2,
-            //   offset: Offset(0, 3), // changes position of shadow
-            // ),
-          ],
+          boxShadow: [],
         ),
         child: Center(
           child: Padding(

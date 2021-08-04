@@ -5,12 +5,13 @@ import 'package:softflow_app/Helpers/Snakebar.dart';
 import 'package:softflow_app/Models/company_model.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
+import 'package:softflow_app/Widgets/drawerContent.dart';
 import '../Admin/all_do_screen.dart';
 import '../Common/do_entry_screen.dart';
 import '../Common/login_screen.dart';
 import 'traffic_master_do_screen.dart';
 
-import '../../Widgets/option_tile_widget.dart';
+import '../../Widgets/MainScreenTile/option_tile_widget.dart';
 
 class TrafficDepartmentScreen extends StatefulWidget {
   static const routeName = "/trafficDepartmentScreen";
@@ -97,46 +98,7 @@ class _TrafficDepartmentScreenState extends State<TrafficDepartmentScreen> {
         // title: Text("Traffic Master Screen"),
         elevation: 0,
       ),
-      endDrawer: Drawer(
-        child: ListView(
-          // Important: Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).accentColor,
-              ),
-              child: Text('Drawer Header'),
-            ),
-            ListTile(
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.logout_rounded,
-                    size: 40,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    "Logout",
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
-                    ),
-                  )
-                ],
-              ),
-              onTap: () {
-                Navigator.of(context).pushNamed(LoginScreen.routeName);
-              },
-            ),
-          ],
-        ),
-      ),
+      endDrawer: DrawerContent(),
       backgroundColor: Color(0xFFfaf3dd),
       body: Stack(
         children: [

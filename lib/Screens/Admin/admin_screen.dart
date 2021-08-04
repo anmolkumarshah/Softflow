@@ -8,11 +8,12 @@ import 'package:softflow_app/Providers/main_provider.dart';
 import 'package:softflow_app/Screens/Admin/add_user_screen.dart';
 import 'package:softflow_app/Screens/Common/party_entry_screen.dart';
 import 'package:softflow_app/Screens/Common/truck_entry_screen.dart';
+import 'package:softflow_app/Widgets/drawerContent.dart';
 import '../Common/login_screen.dart';
 import 'all_do_screen.dart';
 import '../Common/do_entry_screen.dart';
 
-import '../../Widgets/option_tile_widget.dart';
+import '../../Widgets/MainScreenTile/option_tile_widget.dart';
 
 class AdminScreen extends StatefulWidget {
   static const routeName = "/adminScreen";
@@ -45,7 +46,6 @@ class _AdminScreenState extends State<AdminScreen> {
   TextStyle dataStyle = TextStyle(
     color: Colors.white,
     fontSize: 20,
-    // fontWeight: FontWeight.bold,
     fontFamily: 'NotoSerif',
   );
 
@@ -99,44 +99,7 @@ class _AdminScreenState extends State<AdminScreen> {
         elevation: 0,
       ),
       endDrawer: Drawer(
-        child: ListView(
-          // Important: Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).accentColor,
-              ),
-              child: Text('Drawer Header'),
-            ),
-            ListTile(
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.logout_rounded,
-                    size: 40,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    "Logout",
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
-                    ),
-                  )
-                ],
-              ),
-              onTap: () {
-                Navigator.of(context).pushNamed(LoginScreen.routeName);
-              },
-            ),
-          ],
-        ),
+        child: DrawerContent(),
       ),
       backgroundColor: Color(0xFFfaf3dd),
       body: Stack(
@@ -158,15 +121,6 @@ class _AdminScreenState extends State<AdminScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    // Row(
-                    //   crossAxisAlignment: CrossAxisAlignment.end,
-                    //   children: [
-                    //     Text(
-                    //       "Hi,",
-                    //       style: hiStyle,
-                    //     ),
-                    //   ],
-                    // ),
                     Flexible(
                       child: Text(
                         this.userName,
@@ -175,23 +129,6 @@ class _AdminScreenState extends State<AdminScreen> {
                         style: nameStyle,
                       ),
                     ),
-
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.start,
-                    //   children: [
-                    //     Icon(
-                    //       Icons.business,
-                    //       color: Colors.white,
-                    //     ),
-                    //     SizedBox(
-                    //       width: 10,
-                    //     ),
-                    //     Text(
-                    //       "Selected Company",
-                    //       style: subTitleStyle,
-                    //     )
-                    //   ],
-                    // ),
                     _isLoading
                         ? LinearProgressIndicator()
                         : Row(
@@ -211,22 +148,6 @@ class _AdminScreenState extends State<AdminScreen> {
                               ),
                             ],
                           ),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.start,
-                    //   children: [
-                    //     Icon(
-                    //       Icons.event,
-                    //       color: Colors.white,
-                    //     ),
-                    //     SizedBox(
-                    //       width: 10,
-                    //     ),
-                    //     Text(
-                    //       "Selected Year",
-                    //       style: subTitleStyle,
-                    //     ),
-                    //   ],
-                    // ),
                     Row(
                       children: [
                         Icon(
@@ -296,7 +217,7 @@ class _AdminScreenState extends State<AdminScreen> {
                       childAspectRatio: 4,
                     ),
                   ),
-                  height: 350,
+                  height: 500,
                 ),
               ],
             ),

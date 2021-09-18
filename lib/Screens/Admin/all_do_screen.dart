@@ -3,8 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:softflow_app/Helpers/Snakebar.dart';
 import 'package:softflow_app/Helpers/dateFormatfromDataBase.dart';
+import 'package:softflow_app/Helpers/filterTypeHelper.dart';
+import 'package:softflow_app/Helpers/shimmerLoader.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
+import 'package:softflow_app/Screens/Common/tabulardataScreen.dart';
 import 'package:softflow_app/Widgets/doItem.dart';
 import '../../Models/do_model.dart';
 
@@ -17,6 +20,9 @@ class AllDoScreen extends StatefulWidget {
 
 class _AllDoScreenState extends State<AllDoScreen> {
   List<DO> items = [];
+  int _selectedFilter = 1;
+
+  List<int> filterItems = [0, 1, 2, 3, 4];
 
   List<DO> toShowItems = [];
 
@@ -48,23 +54,63 @@ class _AllDoScreenState extends State<AllDoScreen> {
 
   handleSearch(String value) {
     List<DO> temp = items
-        .where(
-          (element) =>
-              (element.do_no.toLowerCase().contains(value.toLowerCase()) ||
-                  element.consignee
-                      .toLowerCase()
-                      .contains(value.toLowerCase()) ||
-                  element.toplc.toLowerCase().contains(value.toLowerCase()) ||
-                  element.frmplc.toLowerCase().contains(value.toLowerCase())) &&
-              (dateFormatFromDataBase(element.do_dt)
-                      .isAfter(selectedDate.subtract(Duration(days: 4))) &&
-                  dateFormatFromDataBase(element.do_dt)
-                      .isBefore(selectedDate.add(Duration(days: 1)))),
-        )
+        .where((element) =>
+            (element.do_no.toLowerCase().contains(value.toLowerCase()) ||
+                element.consignee.toLowerCase().contains(value.toLowerCase()) ||
+                element.toplc.toLowerCase().contains(value.toLowerCase()) ||
+                element.frmplc.toLowerCase().contains(value.toLowerCase())) &&
+            (dateFormatFromDataBase(element.do_dt)
+                    .isAfter(selectedDate.subtract(Duration(days: 4))) &&
+                dateFormatFromDataBase(element.do_dt)
+                    .isBefore(selectedDate.add(Duration(days: 1)))))
         .toList();
     setState(() {
       toShowItems = temp;
     });
+    filterSearch();
+  }
+
+  filterSearch() {
+    switch (_selectedFilter) {
+      case 0:
+        setState(() {
+          toShowItems = toShowItems;
+        });
+        break;
+      case 1:
+        List<DO> temp = toShowItems.where((e) => e.truckid == '-1').toList();
+        setState(() {
+          toShowItems = temp;
+        });
+        break;
+      case 2:
+        List<DO> temp = toShowItems
+            .where((e) =>
+                e.truckid != '-1' &&
+                e.broker != '-1' &&
+                e.Veh_reached != '1' &&
+                e.compl != 1)
+            .toList();
+        setState(() {
+          toShowItems = temp;
+        });
+        break;
+      case 3:
+        List<DO> temp = toShowItems
+            .where((e) => e.Veh_reached == '1' && e.compl != 1)
+            .toList();
+        setState(() {
+          toShowItems = temp;
+        });
+        break;
+      case 4:
+        List<DO> temp = toShowItems.where((e) => e.compl == 1).toList();
+        setState(() {
+          toShowItems = temp;
+        });
+        break;
+      default:
+    }
   }
 
   dynamic _selectDate(BuildContext context) async {
@@ -83,9 +129,8 @@ class _AllDoScreenState extends State<AllDoScreen> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
+  void initState() {
+    super.initState();
     getAndSet();
   }
 
@@ -95,15 +140,39 @@ class _AllDoScreenState extends State<AllDoScreen> {
       appBar: new AppBar(
         title: Text("D.O. Listing"),
         actions: [
-          IconButton(
-              onPressed: () => _selectDate(context),
-              icon: Icon(Icons.date_range_rounded))
+          Container(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton(
+                value: _selectedFilter,
+                items: filterItems.map((int item) {
+                  return DropdownMenuItem<int>(
+                    onTap: () => handleSearch(''),
+                    child: Text(
+                      filterType(item),
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                    value: item,
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedFilter = int.parse(value.toString());
+                  });
+                  handleSearch('');
+                },
+                elevation: 0,
+                icon: Icon(Icons.more_vert),
+                iconEnabledColor: Colors.white,
+                dropdownColor: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
+          ),
         ],
       ),
       body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
+          ? LoadingListPage()
           : Column(
               children: [
                 Container(
@@ -121,14 +190,26 @@ class _AllDoScreenState extends State<AllDoScreen> {
                 Container(
                   color: Colors.white,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Chip(
+                      GestureDetector(
+                        onTap: () => _selectDate(context),
+                        child: Chip(
                           label: Text(
-                        "Results for Date " +
-                            DateFormat.yMMMd().format(selectedDate).toString(),
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      )),
+                            "Results for Date " +
+                                DateFormat.yMMMd()
+                                    .format(selectedDate)
+                                    .toString(),
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      Chip(
+                        label: Text(
+                          "Results : ${toShowItems.length}",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -141,6 +222,7 @@ class _AllDoScreenState extends State<AllDoScreen> {
                       itemBuilder: (context, index) {
                         return DoItem(
                           receivedDO: toShowItems[index],
+                          getAndSet: getAndSet,
                         );
                       },
                     ),
@@ -148,6 +230,21 @@ class _AllDoScreenState extends State<AllDoScreen> {
                 ),
               ],
             ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.of(context).pushNamed(TabularDataScreen.routeName);
+        },
+        label: Row(
+          children: [
+            Icon(Icons.table_chart),
+            SizedBox(
+              width: 5,
+            ),
+            Text("Report"),
+          ],
+        ),
+        // child: ,
+      ),
     );
   }
 }

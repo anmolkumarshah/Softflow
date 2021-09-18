@@ -8,7 +8,6 @@ import 'package:softflow_app/Providers/main_provider.dart';
 import 'package:softflow_app/Widgets/drawerContent.dart';
 import '../Admin/all_do_screen.dart';
 import '../Common/do_entry_screen.dart';
-import '../Common/login_screen.dart';
 import 'traffic_master_do_screen.dart';
 
 import '../../Widgets/MainScreenTile/option_tile_widget.dart';
@@ -99,15 +98,23 @@ class _TrafficDepartmentScreenState extends State<TrafficDepartmentScreen> {
         elevation: 0,
       ),
       endDrawer: DrawerContent(),
-      backgroundColor: Color(0xFFfaf3dd),
       body: Stack(
         children: [
+          Container(
+            height: double.infinity,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/images/back.jpg"),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
           ClipPath(
             child: Container(
               width: double.infinity,
               height: double.infinity,
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.only(
                   bottomRight: Radius.circular(30),
                   bottomLeft: Radius.circular(30),
@@ -119,15 +126,6 @@ class _TrafficDepartmentScreenState extends State<TrafficDepartmentScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    // Row(
-                    //   crossAxisAlignment: CrossAxisAlignment.end,
-                    //   children: [
-                    //     Text(
-                    //       "Hi,",
-                    //       style: hiStyle,
-                    //     ),
-                    //   ],
-                    // ),
                     Flexible(
                       child: Text(
                         this.userName,
@@ -225,9 +223,11 @@ class _TrafficDepartmentScreenState extends State<TrafficDepartmentScreen> {
                           'data': "",
                           'enable': true,
                           'isTrafficMaster': false,
-                          'isAll': true,
+                          'isAll': false,
                           'isSupervisor': false,
                           'isEntry': true,
+                          'isUpdateButton': false,
+                          'isDetailTraffic': false,
                         },
                       ),
                       new OptionWidget(

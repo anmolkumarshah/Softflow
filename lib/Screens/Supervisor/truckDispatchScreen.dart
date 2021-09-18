@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:softflow_app/Helpers/shimmerLoader.dart';
 import 'package:softflow_app/Models/do_model.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
@@ -31,14 +32,14 @@ class _TruckDispatchScreenState extends State<TruckDispatchScreen> {
         """),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return LoadingListPage();
             }
             if (snapshot.connectionState == ConnectionState.done) {
               final List<DO> data =
                   (snapshot.data as Map<String, dynamic>)['data'];
               if (data.length < 1) {
                 return Center(
-                  child: Text("List is Empty"),
+                  child: Chip(label: Text("No Trucks Yet Dispatched...")),
                 );
               }
               return ListView.builder(

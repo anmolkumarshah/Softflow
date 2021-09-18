@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:softflow_app/Models/truck_model.dart';
+import 'package:softflow_app/Screens/Common/truck_input_screen.dart';
 
 // ignore: must_be_immutable
 class TruckTile extends StatelessWidget {
   late Truck truck;
+  Function getAndSet;
 
-  TruckTile({required this.truck});
+  TruckTile({required this.truck, required this.getAndSet});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: ListTile(
-        tileColor: Theme.of(context).primaryColor,
+        tileColor: Theme.of(context).colorScheme.primary,
         leading: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -46,7 +48,13 @@ class TruckTile extends StatelessWidget {
             // fontSize: 20,
           ),
         ),
-        onTap: () {},
+        onTap: () async {
+          await Navigator.of(context).pushNamed(
+            TruckInputScreen.routeName,
+            arguments: {'data': truck, 'enable': false},
+          );
+          getAndSet();
+        },
       ),
     );
   }

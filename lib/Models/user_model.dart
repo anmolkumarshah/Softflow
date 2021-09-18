@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:softflow_app/Helpers/getMethodHelperFunction.dart';
+import 'package:softflow_app/Helpers/preCheck.dart';
 import 'package:softflow_app/Models/url_model.dart';
 import 'dart:convert';
 
@@ -107,8 +108,17 @@ class User {
   // dept_cd1 for role , dept_cd for branch
   static Future<Map<String, dynamic>> addNewUser(Map<String, dynamic> user,
       {bool isUpdate = false}) async {
-    final uid = await User.getUid();
-    final query = """
+    final preResult = await check("""
+      select * from  usr_mast where email = '${user['email']}' and 
+      mobile = '${user['mobile']}'
+      """);
+    if (isUpdate) {
+      preResult['data'] = [];
+    }
+    if (preResult['message'] == 'success' &&
+        (preResult['data'] as List<dynamic>).length < 1) {
+      final uid = await User.getUid();
+      final query = """
     
     insert into usr_mast(usr_nm,pwd,dept_cd1,mobile,email,id,acc_id,acc_id1,
     acc_id2,station,station1,station2,dept_cd)
@@ -120,7 +130,7 @@ class User {
     
     """;
 
-    final updateQuery = """
+      final updateQuery = """
 
     update usr_mast
     set 
@@ -134,20 +144,24 @@ class User {
     id =  ${user['id']}
 
     """;
-    final UrlGlobal urlObject = new UrlGlobal(
-      p2: isUpdate ? updateQuery : query,
-      p1: '1',
-      p: '2',
-    );
-    final url = urlObject.getUrl();
-    print(url);
-    try {
-      final result = await getMethod(url);
-      final data = json.decode(result.body);
-      return {"message": 'success', 'data': data};
-    } catch (e) {
-      return {"message": "Error occurred while fetching products"};
+      final UrlGlobal urlObject = new UrlGlobal(
+        p2: isUpdate ? updateQuery : query,
+        p1: '1',
+        p: '2',
+      );
+      final url = urlObject.getUrl();
+      print(url);
+      try {
+        final result = await getMethod(url);
+        final data = json.decode(result.body);
+        return {"message": 'success', 'data': data};
+      } catch (e) {
+        return {"message": "Error occurred while fetching products"};
+      }
+    } else {
+      return {"message": "User exist with this Email and Mobile Number"};
     }
+    // return {"message": "Error occurred while fetching products"};
   }
 
   static Future<Map<String, dynamic>> getAllUser() async {
@@ -185,7 +199,7 @@ class User {
     final UrlGlobal urlObject = new UrlGlobal(
         p2: "select * from usr_mast where email = '${this.email}' and pwd = '${this.password}' ");
     final url = urlObject.getUrl();
-    print(url);
+
     final result = await getMethod(url);
     try {
       final data = json.decode(result.body);

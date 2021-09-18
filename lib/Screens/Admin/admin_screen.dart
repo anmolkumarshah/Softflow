@@ -9,7 +9,6 @@ import 'package:softflow_app/Screens/Admin/add_user_screen.dart';
 import 'package:softflow_app/Screens/Common/party_entry_screen.dart';
 import 'package:softflow_app/Screens/Common/truck_entry_screen.dart';
 import 'package:softflow_app/Widgets/drawerContent.dart';
-import '../Common/login_screen.dart';
 import 'all_do_screen.dart';
 import '../Common/do_entry_screen.dart';
 
@@ -102,127 +101,139 @@ class _AdminScreenState extends State<AdminScreen> {
         child: DrawerContent(),
       ),
       backgroundColor: Color(0xFFfaf3dd),
-      body: Stack(
-        children: [
-          ClipPath(
-            child: Container(
-              width: double.infinity,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Container(
               height: double.infinity,
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.only(
-                  bottomRight: Radius.circular(30),
-                  bottomLeft: Radius.circular(30),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        this.userName,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: nameStyle,
-                      ),
-                    ),
-                    _isLoading
-                        ? LinearProgressIndicator()
-                        : Row(
-                            children: [
-                              Icon(
-                                Icons.account_box_outlined,
-                                color: Colors.white,
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Text(
-                                this.companyName,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: dataStyle,
-                              ),
-                            ],
-                          ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_view_day,
-                          color: Colors.white,
-                        ),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Text(
-                          this.year,
-                          style: dataStyle,
-                        ),
-                      ],
-                    ),
-                  ],
+                image: DecorationImage(
+                  image: AssetImage("assets/images/back.jpg"),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
-            clipper: ClipPathClass(),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  child: GridView(
-                    shrinkWrap: true,
+            ClipPath(
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.only(
+                    bottomRight: Radius.circular(30),
+                    bottomLeft: Radius.circular(30),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      // do entry
-                      new OptionWidget(
-                        text: "D.O. Entry",
-                        routeName: DoEntryScreen.routeName,
-                        arguments: {
-                          'data': "",
-                          'enable': true,
-                          'isTrafficMaster': false,
-                          'isAll': false,
-                          'isSupervisor': false,
-                          'isEntry': true,
-                        },
+                      Flexible(
+                        child: Text(
+                          this.userName,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: nameStyle,
+                        ),
                       ),
-                      // do listing
-                      new OptionWidget(
-                        text: "D.O. Listing",
-                        routeName: AllDoScreen.routeName,
-                      ),
-                      // add new user
-                      new OptionWidget(
-                        text: "Add New User",
-                        routeName: AddUserScreen.routeName,
-                      ),
-                      new OptionWidget(
-                        text: "Party Entry",
-                        routeName: PartyEntryScreen.routeName,
-                      ),
-                      new OptionWidget(
-                        text: "Truck Entry",
-                        routeName: TruckEntryScreen.routeName,
+                      _isLoading
+                          ? LinearProgressIndicator()
+                          : Row(
+                              children: [
+                                Icon(
+                                  Icons.account_box_outlined,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  this.companyName,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: dataStyle,
+                                ),
+                              ],
+                            ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_view_day,
+                            color: Colors.white,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            this.year,
+                            style: dataStyle,
+                          ),
+                        ],
                       ),
                     ],
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 1,
-                      mainAxisSpacing: 15,
-                      crossAxisSpacing: 15,
-                      childAspectRatio: 4,
-                    ),
                   ),
-                  height: 500,
                 ),
-              ],
+              ),
+              clipper: ClipPathClass(),
             ),
-          )
-        ],
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    child: GridView(
+                      shrinkWrap: true,
+                      children: [
+                        // do entry
+                        new OptionWidget(
+                          text: "D.O. Entry",
+                          routeName: DoEntryScreen.routeName,
+                          arguments: {
+                            'data': "",
+                            'enable': true,
+                            'isTrafficMaster': false,
+                            'isAll': false,
+                            'isSupervisor': false,
+                            'isEntry': true,
+                            'isUpdateButton': false,
+                          },
+                        ),
+                        // do listing
+                        new OptionWidget(
+                          text: "D.O. Listing",
+                          routeName: AllDoScreen.routeName,
+                        ),
+                        // add new user
+                        new OptionWidget(
+                          text: "Add New User",
+                          routeName: AddUserScreen.routeName,
+                        ),
+                        new OptionWidget(
+                          text: "Party Entry",
+                          routeName: PartyEntryScreen.routeName,
+                        ),
+                        new OptionWidget(
+                          text: "Truck Entry",
+                          routeName: TruckEntryScreen.routeName,
+                        ),
+                      ],
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 1,
+                        mainAxisSpacing: 15,
+                        crossAxisSpacing: 15,
+                        childAspectRatio: 4,
+                      ),
+                    ),
+                    height: 500,
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

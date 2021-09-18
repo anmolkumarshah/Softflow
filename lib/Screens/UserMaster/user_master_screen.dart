@@ -104,7 +104,7 @@ class _UserMasterScreenState extends State<UserMasterScreen> {
               width: double.infinity,
               height: double.infinity,
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.only(
                   bottomRight: Radius.circular(30),
                   bottomLeft: Radius.circular(30),

@@ -6,18 +6,20 @@ import 'package:softflow_app/Screens/Admin/registration_screen.dart';
 // ignore: must_be_immutable
 class UserTile extends StatelessWidget {
   late User userItem;
+  Function getset;
 
-  UserTile(this.userItem);
+  UserTile(this.userItem, this.getset);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context).pushNamed(RegistrationScreen.routeName,
+      onTap: () async {
+        await Navigator.of(context).pushNamed(RegistrationScreen.routeName,
             arguments: {'data': userItem});
+        this.getset();
       },
       child: ListTile(
-        tileColor: Theme.of(context).primaryColor,
+        tileColor: Theme.of(context).colorScheme.primary,
         contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
         leading: Column(
           mainAxisAlignment: MainAxisAlignment.center,

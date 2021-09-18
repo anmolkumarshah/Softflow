@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
-import 'package:multi_select_flutter/bottom_sheet/multi_select_bottom_sheet_field.dart';
-import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
-import 'package:multi_select_flutter/util/multi_select_item.dart';
-import 'package:multi_select_flutter/util/multi_select_list_type.dart';
 import 'package:provider/provider.dart';
 import 'package:softflow_app/Helpers/Snakebar.dart';
+import 'package:softflow_app/Helpers/shimmerLoader.dart';
 import 'package:softflow_app/Helpers/typeAccountHelper.dart';
 import 'package:softflow_app/Models/branch_model.dart';
 import 'package:softflow_app/Models/partyName_model.dart';
@@ -24,19 +21,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   static List<PartyName> _partyNames = [];
   static List<Station> _stationNames = [];
 
-  final _items = _partyNames
-      .map((party) => MultiSelectItem<PartyName>(party, party.name))
-      .toList();
-
-  final _fromStationItems = _stationNames
-      .map((station) => MultiSelectItem<Station>(station, station.name))
-      .toList();
-
   List<PartyName> _selectedPartyNames = [];
   List<Station> _selectedStationName = [];
-
-  List<PartyName> _tempPartyNames = [];
-  List<Station> _tempStationName = [];
 
   TextEditingController _nameController = TextEditingController(text: "");
   TextEditingController _emailController = TextEditingController(text: "");
@@ -77,18 +63,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       _isLoading = true;
     });
     if (_formKey.currentState!.validate()) {
+      user['name'] = _nameController.value.text;
+      user['email'] = _emailController.value.text;
+      user['mobile'] = _mobileController.value.text;
+      user['password'] = _passwordController.value.text;
       switch (_value) {
+        // for supervisor user
         case 2:
           {
             _formKey.currentState!.save();
-            if (_selectedStationName.length < 0 ||
+            if (_selectedStationName.length < 1 ||
                 _selectedStationName.length > 3 ||
-                _selectedStationName.length < 3 ||
-                _selectedPartyNames.length < 0 ||
-                _selectedPartyNames.length > 3 ||
-                _selectedPartyNames.length < 3) {
+                _selectedPartyNames.length < 1 ||
+                _selectedPartyNames.length > 3) {
               showSnakeBar(context,
-                  "Please select 3 party and 3 stations name for Supervisor role");
+                  "Please select at most 3 party and 3 stations name for Supervisor role");
               setState(() {
                 _isLoading = false;
               });
@@ -99,22 +88,40 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             // for case of supervisor
             user['type'] = _value;
             user['branch'] = _selectedBranch;
-            user['acc_id'] = _selectedPartyNames[0].getId();
-            user['acc_id1'] = _selectedPartyNames[1].getId();
-            user['acc_id2'] = _selectedPartyNames[2].getId();
 
-            user['station'] = _selectedStationName[0].id;
-            user['station1'] = _selectedStationName[1].id;
-            user['station2'] = _selectedStationName[2].id;
+            if (_selectedPartyNames.length == 1) {
+              user['acc_id'] = _selectedPartyNames[0].getId();
+            } else if (_selectedPartyNames.length == 2) {
+              user['acc_id'] = _selectedPartyNames[0].getId();
+              user['acc_id1'] = _selectedPartyNames[1].getId();
+            } else {
+              user['acc_id'] = _selectedPartyNames[0].getId();
+              user['acc_id1'] = _selectedPartyNames[1].getId();
+              user['acc_id2'] = _selectedPartyNames[2].getId();
+            }
+
+            if (_selectedStationName.length == 1) {
+              user['station'] = _selectedStationName[0].id;
+            } else if (_selectedStationName.length == 2) {
+              user['station'] = _selectedStationName[0].id;
+              user['station1'] = _selectedStationName[1].id;
+            } else {
+              user['station'] = _selectedStationName[0].id;
+              user['station1'] = _selectedStationName[1].id;
+              user['station2'] = _selectedStationName[2].id;
+            }
+
+            //
 
             final result = await User.addNewUser(user, isUpdate: isUpdate);
             if (result['message'] == 'success') {
               showSnakeBar(context, "New User added successfully");
+              Navigator.of(context).pop();
               setState(() {
                 _isLoading = false;
               });
             } else {
-              showSnakeBar(context, "Error in adding new user");
+              showSnakeBar(context, result['message']);
               setState(() {
                 _isLoading = false;
               });
@@ -129,11 +136,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             final result = await User.addNewUser(user, isUpdate: isUpdate);
             if (result['message'] == 'success') {
               showSnakeBar(context, "New User added successfully");
-              setState(() {
-                _isLoading = false;
-              });
+              Navigator.of(context).pop();
             } else {
-              showSnakeBar(context, "Error in adding new user");
+              showSnakeBar(context, result['message']);
               setState(() {
                 _isLoading = false;
               });
@@ -148,8 +153,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
-  handleUpdate(User userItem) {}
-
   getSet() async {
     setState(() {
       _isWholeLoading = true;
@@ -159,12 +162,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     final result =
         await PartyName.getPartyName(currentUser.co, currentUser.yr, '', 'A5');
     final result2 = await Station.getStations("");
-    setState(() {
-      _branchItems = branchResult['data'];
-      _partyNames = result['data'] as List<PartyName>;
-      _stationNames = result2['data'] as List<Station>;
-      _isWholeLoading = false;
-    });
+    if (result['message'] == 'success') {
+      setState(() {
+        _branchItems = branchResult['data'];
+        _partyNames = result['data'] as List<PartyName>;
+        _stationNames = result2['data'] as List<Station>;
+        _isWholeLoading = false;
+      });
+    } else {
+      showSnakeBar(context, "Error Occured, Please Try Again");
+      Navigator.of(context).pop();
+    }
   }
 
   handleChangeStaPar() async {
@@ -197,20 +205,79 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       _isEdit = true;
       _selectedBranch = userItem.deptCd != '0' ? userItem.deptCd : '1';
       _value = userItem.deptCd1 != '-1' ? int.parse(userItem.deptCd1) : 0;
-      if (userItem.deptCd1 == '2') {
-        _isSupervisor = true;
-        _tempPartyNames = tempPartyList;
-        _tempStationName = tempStationList;
-        _selectedPartyNames = _tempPartyNames;
-        _selectedStationName = _tempStationName;
-      }
     });
+
+    if (userItem.deptCd1 == '2') {
+      setState(() {
+        _isSupervisor = true;
+        _selectedPartyNames = tempPartyList;
+        _selectedStationName = tempStationList;
+      });
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     getSet();
+  }
+
+  List<Widget> _partyChoiceList() {
+    List<Widget> choices = [];
+
+    _partyNames.forEach((item) {
+      choices.add(Container(
+        padding: const EdgeInsets.all(2.0),
+        child: ChoiceChip(
+          disabledColor: Theme.of(context).colorScheme.secondary,
+          selectedColor: Theme.of(context).colorScheme.primary,
+          labelStyle: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+          label: Text(item.name),
+          selected: _selectedPartyNames.any((element) => element.id == item.id),
+          onSelected: (selected) {
+            setState(() {
+              _selectedPartyNames.any((element) => element.id == item.id)
+                  ? _selectedPartyNames
+                      .removeWhere((element) => element.id == item.id)
+                  : _selectedPartyNames.add(item);
+            });
+          },
+        ),
+      ));
+    });
+    return choices;
+  }
+
+  List<Widget> _locationChoiceList() {
+    List<Widget> choices = [];
+    _stationNames.forEach((item) {
+      choices.add(Container(
+        padding: const EdgeInsets.all(2.0),
+        child: ChoiceChip(
+          disabledColor: Theme.of(context).colorScheme.secondary,
+          selectedColor: Theme.of(context).colorScheme.primary,
+          labelStyle: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+          label: Text(item.name),
+          selected:
+              _selectedStationName.any((element) => element.id == item.id),
+          onSelected: (selected) {
+            setState(() {
+              _selectedStationName.any((element) => element.id == item.id)
+                  ? _selectedStationName
+                      .removeWhere((element) => element.id == item.id)
+                  : _selectedStationName.add(item);
+            });
+          },
+        ),
+      ));
+    });
+    return choices;
   }
 
   @override
@@ -225,9 +292,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         title: Text("Add New User"),
       ),
       body: _isWholeLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
+          ? LoadingListPage()
           : Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
@@ -235,6 +300,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   key: _formKey,
                   child: ListView(
                     children: [
+                      SizedBox(
+                        height: 5,
+                      ),
                       TextFormField(
                         controller: _nameController,
                         onSaved: (value) {
@@ -350,7 +418,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               hint: Text("Select Branch"),
                               elevation: 8,
                               icon: Icon(Icons.arrow_drop_down_circle),
-                              iconEnabledColor: Theme.of(context).accentColor,
+                              iconEnabledColor:
+                                  Theme.of(context).colorScheme.secondary,
                               // isExpanded: true,
                             ),
                           ),
@@ -393,138 +462,59 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               hint: Text("Select User Role"),
                               elevation: 8,
                               icon: Icon(Icons.arrow_drop_down_circle),
-                              iconEnabledColor: Theme.of(context).accentColor,
+                              iconEnabledColor:
+                                  Theme.of(context).colorScheme.secondary,
                               // isExpanded: true,
                             ),
                           ),
                         ],
                       ),
                       _isSupervisor
-                          ? _isEdit && !_toChange
-                              ? Padding(
-                                  padding: const EdgeInsets.all(15.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Selected Parties",
-                                        style: TextStyle(fontSize: 18),
-                                      ),
-                                      Wrap(
-                                        direction: Axis.horizontal,
-                                        spacing: 5,
-                                        children: _tempPartyNames
-                                            .map((e) =>
-                                                Chip(label: Text(e.name)))
-                                            .toList(),
-                                      ),
-                                      SizedBox(
-                                        height: 20,
-                                      ),
-                                      Text(
-                                        "Selected Stations",
-                                        style: TextStyle(fontSize: 18),
-                                      ),
-                                      Wrap(
-                                        direction: Axis.horizontal,
-                                        spacing: 5,
-                                        children: _tempStationName
-                                            .map((e) =>
-                                                Chip(label: Text(e.name)))
-                                            .toList(),
-                                      ),
-                                      Center(
-                                        child: TextButton(
-                                            onPressed: handleChangeStaPar,
-                                            child: Text(
-                                                "Change Parties and Stations")),
-                                      )
-                                    ],
-                                  ),
-                                )
-                              : Column(
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(5),
-                                        border: Border.all(
-                                          color: Colors.grey,
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 15),
+                                      child: Text(
+                                        "Select Parties",
+                                        style: TextStyle(
+                                          fontSize: 18,
                                         ),
-                                      ),
-                                      child: Column(
-                                        children: <Widget>[
-                                          MultiSelectBottomSheetField(
-                                            initialChildSize: 0.4,
-                                            listType: MultiSelectListType.LIST,
-                                            searchable: true,
-                                            buttonText:
-                                                Text("Select 3 Parties"),
-                                            title: Text("Party Names"),
-                                            items: _items,
-                                            onConfirm: (values) {
-                                              values.forEach((element) {
-                                                _selectedPartyNames
-                                                    .add(element as PartyName);
-                                              });
-                                            },
-                                            chipDisplay: MultiSelectChipDisplay(
-                                              textStyle: TextStyle(
-                                                  color: Colors.black),
-                                              onTap: (value) {},
-                                            ),
-                                          ),
-                                        ],
                                       ),
                                     ),
                                     SizedBox(
-                                      height: 10,
+                                      width: 20,
                                     ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(5),
-                                        border: Border.all(
-                                          color: Colors.grey,
+                                    Wrap(
+                                      children: _partyChoiceList(),
+                                    )
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 15),
+                                      child: Text(
+                                        "Select From Stations",
+                                        style: TextStyle(
+                                          fontSize: 18,
                                         ),
                                       ),
-                                      child: Column(
-                                        children: <Widget>[
-                                          MultiSelectBottomSheetField(
-                                            initialChildSize: 0.4,
-                                            listType: MultiSelectListType.LIST,
-                                            searchable: true,
-                                            buttonText:
-                                                Text("Select 3 Stations"),
-                                            title: Text("Stations Names"),
-                                            items: _fromStationItems,
-                                            onConfirm: (values) {
-                                              if (values.length > 0) {
-                                                List<Station> temp = [];
-                                                values.forEach((element) {
-                                                  temp.add(element as Station);
-                                                });
-                                                setState(() {
-                                                  _selectedStationName = temp;
-                                                });
-                                              }
-                                            },
-                                            chipDisplay: MultiSelectChipDisplay(
-                                              textStyle: TextStyle(
-                                                  color: Colors.black),
-                                              onTap: (value) {
-                                                print((value as Station).id);
-                                                setState(() {
-                                                  _selectedPartyNames
-                                                      .remove((value).id);
-                                                });
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 20,
+                                    ),
+                                    Wrap(
+                                      children: _locationChoiceList(),
                                     )
                                   ],
                                 )
+                              ],
+                            )
                           : SizedBox(
                               width: 0,
                             ),

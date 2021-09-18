@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:core';
+import 'package:softflow_app/Helpers/dateFormatfromDataBase.dart';
 import 'package:softflow_app/Helpers/getMethodHelperFunction.dart';
 import 'package:softflow_app/Models/url_model.dart';
 
@@ -52,6 +53,10 @@ class DO {
   int desp_by;
   String br_cd;
 
+  double adv;
+  double truck_wt;
+  double dies;
+
   DO({
     this.uid = '-1',
     this.consecd = '-1',
@@ -100,19 +105,65 @@ class DO {
     this.Veh_intime = "",
     this.Wt = 0.0,
     this.br_cd = '0',
+    this.adv = 0,
+    this.dies = 0,
+    this.truck_wt = 0,
   });
 
-  void display() {
-    //   print(this.product.showName());
-    //   print(this.dateTime.toString().split(' ')[0]);
-    //   print(this.doNumber);
-    //   print(this.fromStation.showName());
-    //   print(this.toStation.showName());
-    //   print(this.product.showName());
-    //   print(this.quantity);
-    //   print(this.consignee.showName());
-    //   print(this.consignor.showName());
-    //   print(this.truck.getNo());
+  DO clone(DO refDO) {
+    refDO.inddt = dateFormatFromDataBase(this.inddt).toString().split(" ")[0];
+    refDO.consecd = this.consecd;
+    refDO.consrcd = this.consrcd;
+    refDO.itemnm = this.itemnm;
+    refDO.todt = dateFormatFromDataBase(this.todt).toString().split(" ")[0];
+    refDO.toplc = this.toplc;
+    refDO.frmplc = this.frmplc;
+    refDO.consignee = this.consignee;
+    refDO.do_dt = dateFormatFromDataBase(this.do_dt).toString().split(" ")[0];
+    refDO.acc_id = this.acc_id;
+    refDO.uid = this.uid;
+    refDO.broker = this.broker;
+    refDO.compl = this.compl;
+    refDO.deltmt = this.deltmt;
+    refDO.do_no = this.do_no;
+    refDO.doamt = this.doamt;
+    refDO.frdt = dateFormatFromDataBase(this.frdt).toString().split(" ")[0];
+    refDO.indno = this.indno;
+    refDO.km_levl = this.km_levl;
+    refDO.lias_rt = this.lias_rt;
+    refDO.place_rt = this.place_rt;
+    refDO.pono = this.pono;
+    refDO.rt = this.shr_perc;
+    refDO.shr_perc = this.shr_perc;
+    refDO.tmt = this.tmt;
+    refDO.truckid = this.truckid;
+    refDO.Wt = this.Wt;
+    refDO.Veh_reached = this.Veh_reached;
+    refDO.Consignor_GST = this.Consignor_GST;
+    refDO.desp_by = this.desp_by;
+    refDO.desp_time = this.desp_time;
+    refDO.drv_mobile = this.drv_mobile;
+    refDO.drv_name = this.drv_name;
+    refDO.drv_photo = this.drv_photo;
+    refDO.Eway_photo = this.Eway_photo;
+    refDO.EwayNo = this.EwayNo;
+    refDO.EwayQrcode = this.EwayQrcode;
+    refDO.grn_no1 = this.grn_no1;
+    refDO.GRN_NO = this.GRN_NO;
+    refDO.inv_date =
+        dateFormatFromDataBase(this.inv_date).toString().split(" ")[0];
+    refDO.INV_no = this.INV_no;
+    refDO.lr_photo = this.lr_photo;
+    refDO.pinv_photo = this.pinv_photo;
+    refDO.valid_till = this.valid_till;
+    refDO.Veh_inby = this.Veh_intime;
+    refDO.Veh_intime = this.Veh_intime;
+    refDO.br_cd = this.br_cd;
+    refDO.adv = this.adv;
+    refDO.dies = this.dies;
+    refDO.truck_wt = this.truck_wt;
+
+    return refDO;
   }
 
   static Future<Map<String, dynamic>> getAllUnAllotedDo(
@@ -186,7 +237,7 @@ class DO {
 
   static Future<Map<String, dynamic>> getAllDO(String pattern,
       {String branch = '0'}) async {
-    String query = "select * from domast where do_no like '%$pattern%'";
+    String query = "select * from domast order by do_dt desc";
     if (branch != '0' && branch != '1') {
       query = "select * from domast where br_cd = $branch";
     }
@@ -194,61 +245,64 @@ class DO {
       p2: query,
     );
     final url = urlObject.getUrl();
-    print(url);
     try {
       final result = await getMethod(url);
       final data = json.decode(result.body);
       final doList = (data as List<dynamic>)
-          .map((record) => new DO(
-                inddt: record['inddt'].toString().trim(),
-                consecd: record['consecd'].toString().trim(),
-                consrcd: record['consrcd'].toString().trim(),
-                itemnm: record['itemnm'].toString().trim(),
-                todt: record['todt'].toString().trim(),
-                toplc: record['toplc'].toString().trim(),
-                frmplc: record['frmplc'].toString().trim(),
-                consignee: record['consignee'].toString().trim(),
-                do_dt: record['do_dt'].toString().trim(),
-                acc_id: record['acc_id'].toString().trim(),
-                uid: record['uid'].toString().trim(),
-                broker: record['broker'].toString().trim(),
-                compl: record['compl'] == true ? 1 : 0,
-                deltmt: record['deltmt'],
-                do_no: record['do_no'].toString().trim(),
-                doamt: record['doamt'],
-                frdt: record['frdt'].toString().trim(),
-                indno: record['indno'].toString().trim(),
-                km_levl: record['km_levl'],
-                lias_rt: record['lias_rt'],
-                place_rt: record['place_rt'],
-                pono: record['pono'].toString().trim(),
-                rt: record['rt'],
-                shr_perc: record['shr_perc'],
-                tmt: record['tmt'],
-                truckid: record['truckid'].toString().trim(),
-                Wt: record['Wt'],
-                Veh_reached: record['Veh_reached'] ? '1' : '0',
-                Consignor_GST: record['Consignor_GST'].toString(),
-                desp_by: record['desp_by'],
-                desp_time: record['desp_time'].toString(),
-                drv_mobile: record['drv_mobile'].toString(),
-                drv_name: record['drv_name'].toString(),
-                drv_photo: record['drv_photo'].toString(),
-                Eway_photo: record['Eway_photo'].toString(),
-                EwayNo: record['EwayNo'].toString(),
-                EwayQrcode: record['EwayQrcode'].toString(),
-                grn_no1: record['grn_no1'].toString(),
-                GRN_NO: record['GRN_NO'],
-                inv_date: record['inv_date'].toString(),
-                INV_no: record['INV_no'].toString(),
-                lr_photo: record['lr_photo'].toString(),
-                pinv_photo: record['pinv_photo'].toString(),
-                valid_till: record['valid_till'].toString(),
-                Veh_inby: record['Veh_inby'].toString(),
-                Veh_intime: record['Veh_intime'].toString(),
-                br_cd:
-                    record['br_cd'] == null ? '0' : record['br_cd'].toString(),
-              ))
+          .map(
+            (record) => new DO(
+              inddt: record['inddt'].toString().trim(),
+              consecd: record['consecd'].toString().trim(),
+              consrcd: record['consrcd'].toString().trim(),
+              itemnm: record['itemnm'].toString().trim(),
+              todt: record['todt'].toString().trim(),
+              toplc: record['toplc'].toString().trim(),
+              frmplc: record['frmplc'].toString().trim(),
+              consignee: record['consignee'].toString().trim(),
+              do_dt: record['do_dt'].toString().trim(),
+              acc_id: record['acc_id'].toString().trim(),
+              uid: record['uid'].toString().trim(),
+              broker: record['broker'].toString().trim(),
+              compl: record['compl'] == true ? 1 : 0,
+              deltmt: record['deltmt'],
+              do_no: record['do_no'].toString().trim(),
+              doamt: record['doamt'],
+              frdt: record['frdt'].toString().trim(),
+              indno: record['indno'].toString().trim(),
+              km_levl: record['km_levl'],
+              lias_rt: record['lias_rt'],
+              place_rt: record['place_rt'],
+              pono: record['pono'].toString().trim(),
+              rt: record['rt'],
+              shr_perc: record['shr_perc'],
+              tmt: record['tmt'],
+              truckid: record['truckid'].toString().trim(),
+              Wt: record['Wt'],
+              Veh_reached: record['Veh_reached'] ? '1' : '0',
+              Consignor_GST: record['Consignor_GST'].toString(),
+              desp_by: record['desp_by'],
+              desp_time: record['desp_time'].toString(),
+              drv_mobile: record['drv_mobile'].toString(),
+              drv_name: record['drv_name'].toString(),
+              drv_photo: record['drv_photo'].toString(),
+              Eway_photo: record['Eway_photo'].toString(),
+              EwayNo: record['EwayNo'].toString(),
+              EwayQrcode: record['EwayQrcode'].toString(),
+              grn_no1: record['grn_no1'].toString(),
+              GRN_NO: record['GRN_NO'],
+              inv_date: record['inv_date'].toString(),
+              INV_no: record['INV_no'].toString(),
+              lr_photo: record['lr_photo'].toString(),
+              pinv_photo: record['pinv_photo'].toString(),
+              valid_till: record['valid_till'].toString(),
+              Veh_inby: record['Veh_inby'].toString(),
+              Veh_intime: record['Veh_intime'].toString(),
+              br_cd: record['br_cd'] == null ? '0' : record['br_cd'].toString(),
+              adv: record['adv'] == null ? 0 : record['adv'],
+              dies: record['dies'] == null ? 0 : record['dies'],
+              truck_wt: record['truck_wt'] == null ? 0 : record['truck_wt'],
+            ),
+          )
           .toList();
       return {"message": 'success', 'data': doList};
     } catch (e) {
@@ -263,7 +317,6 @@ class DO {
       p2: query,
     );
     final url = urlObject.getUrl();
-    print(url);
     try {
       final result = await getMethod(url);
       final data = json.decode(result.body);
@@ -338,19 +391,31 @@ class DO {
       final result = await getMethod(url);
       final data = json.decode(result.body);
       this.uid = data['uid'].toString();
+      print("GetSetUId");
     } catch (e) {
       return {"message": "Error occurred while getting and setting uid for DO"};
     }
   }
 
-  Future update() async {
-    final query = """
+  Future update({String q = ''}) async {
+    String query = """
      
      update domast
-     set broker = '${this.broker}', truckid = '${this.truckid}'
-     where uid = '${this.uid}' and do_no = '${this.do_no}'; 
+     set broker = '${this.broker}', truckid = '${this.truckid}',
+        adv = ${this.adv}, truck_wt = ${this.truck_wt}, dies = ${this.dies},
+        do_dt = '${this.do_dt}',consignee = '${this.consignee}',frmplc = '${this.frmplc}',
+        toplc = '${this.toplc}',itemnm = '${this.itemnm}',
+        consrcd = ${this.consrcd},consecd = ${this.consecd},indno = '${this.indno}',
+        inddt = '${this.inddt}',do_no = '${this.do_no}',
+        Wt = ${this.Wt},br_cd = '${this.br_cd}',rt = ${this.rt}
+
+     where uid = '${this.uid}'; 
      
      """;
+
+    if (q != '') {
+      query = q;
+    }
     print(query);
     final UrlGlobal urlObject = new UrlGlobal(
       p2: query,
@@ -373,13 +438,13 @@ class DO {
      
      update domast
      set grn_no1 = '${this.grn_no1}', GRN_NO = ${this.GRN_NO}, INV_no = '${this.INV_no}',
-     inv_date = ${this.inv_date}, EwayNo = '${this.EwayNo}', EwayQrcode = '${this.EwayQrcode}',
-     Consignor_GST = '${this.Consignor_GST}', valid_till = ${this.valid_till},
+     inv_date = '${this.inv_date}', EwayNo = '${this.EwayNo}', EwayQrcode = '${this.EwayQrcode}',
+     Consignor_GST = '${this.Consignor_GST}', valid_till = '${this.valid_till}',
      drv_name = '${this.drv_name}', drv_mobile = '${this.drv_mobile}'
      where uid = '${this.uid}' and do_no = '${this.do_no}'; 
      
      """;
-    print(query);
+
     final UrlGlobal urlObject = new UrlGlobal(
       p2: query,
       p1: '1',
@@ -389,7 +454,7 @@ class DO {
       final url = urlObject.getUrl();
       final result = await getMethod(url);
       final data = json.decode(result.body);
-      print(data);
+
       return {"message": data['status']};
     } catch (e) {
       return {"message": "Error occurred while updating DO"};
@@ -400,11 +465,10 @@ class DO {
     final query = """
      
      update domast
-     set Veh_reached = $value, Veh_inby = $userId, Veh_intime = ${DateTime.now().toString().split(' ')[0]}
+     set Veh_reached = $value, Veh_inby = $userId, Veh_intime = GETDATE()
      where uid = '${this.uid}'; 
      
      """;
-    print(query);
     final UrlGlobal urlObject = new UrlGlobal(
       p2: query,
       p1: '1',
@@ -414,7 +478,7 @@ class DO {
       final url = urlObject.getUrl();
       final result = await getMethod(url);
       final data = json.decode(result.body);
-      print(data);
+
       return {"message": data['status']};
     } catch (e) {
       return {"message": "Error occurred while updating DO"};
@@ -425,11 +489,11 @@ class DO {
     final query = """
      
      update domast
-     set compl = $value, desp_by = $userId, desp_time = ${DateTime.now().toString().split(' ')[0]}
+     set compl = $value, desp_by = $userId, desp_time = GETDATE()
      where uid = '${this.uid}'; 
      
      """;
-    print(query);
+
     final UrlGlobal urlObject = new UrlGlobal(
       p2: query,
       p1: '1',
@@ -439,7 +503,7 @@ class DO {
       final url = urlObject.getUrl();
       final result = await getMethod(url);
       final data = json.decode(result.body);
-      print(data);
+
       return {"message": data['status']};
     } catch (e) {
       return {"message": "Error occurred while updating DO"};
@@ -458,7 +522,9 @@ class DO {
         ${this.km_levl},${this.shr_perc},'${this.pono}','${this.itemnm}',
         ${this.consrcd},${this.consecd},'${this.indno}','${this.inddt}',
         '${this.broker}','${this.truckid}',${this.Wt},'${this.br_cd}' ) """;
+
     print(query);
+
     final UrlGlobal urlObject = new UrlGlobal(
       p2: query,
       p1: '1',
@@ -468,6 +534,7 @@ class DO {
       final url = urlObject.getUrl();
       final result = await getMethod(url);
       final data = json.decode(result.body);
+      print(data);
       return {"message": data['status']};
     } catch (e) {
       return {"message": "Error occurred while saving DO"};

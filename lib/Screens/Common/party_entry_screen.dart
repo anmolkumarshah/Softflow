@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:softflow_app/Helpers/Snakebar.dart';
+import 'package:softflow_app/Helpers/shimmerLoader.dart';
 import 'package:softflow_app/Models/partyName_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
+import 'package:softflow_app/Screens/Common/party_input_screen.dart';
 import 'package:softflow_app/Widgets/PartyName/partyTile.dart';
 
 class PartyEntryScreen extends StatefulWidget {
@@ -14,27 +16,22 @@ class PartyEntryScreen extends StatefulWidget {
 
 class _PartyEntryScreenState extends State<PartyEntryScreen> {
   List<PartyName> _list = [];
+  List<PartyName> toShowItems = [];
   bool _isWholeLoading = false;
 
   handleSearch(String value) {
-    // List<DO> temp = items
-    //     .where(
-    //       (element) =>
-    //           (element.do_no.toLowerCase().contains(value.toLowerCase()) ||
-    //               element.consignee
-    //                   .toLowerCase()
-    //                   .contains(value.toLowerCase()) ||
-    //               element.toplc.toLowerCase().contains(value.toLowerCase()) ||
-    //               element.frmplc.toLowerCase().contains(value.toLowerCase())) &&
-    //           (dateFormatFromDataBase(element.do_dt)
-    //                   .isAfter(selectedDate.subtract(Duration(days: 4))) &&
-    //               dateFormatFromDataBase(element.do_dt)
-    //                   .isBefore(selectedDate.add(Duration(days: 1)))),
-    //     )
-    //     .toList();
-    // setState(() {
-    //   toShowItems = temp;
-    // });
+    List<PartyName> temp = _list
+        .where(
+          (element) =>
+              (element.name.toLowerCase().contains(value.toLowerCase()) ||
+                  element.bal_cd.toLowerCase().contains(value.toLowerCase()) ||
+                  element.mobile.toLowerCase().contains(value.toLowerCase()) ||
+                  element.place.toLowerCase().contains(value.toLowerCase())),
+        )
+        .toList();
+    setState(() {
+      toShowItems = temp;
+    });
   }
 
   getAndSet() async {
@@ -43,10 +40,12 @@ class _PartyEntryScreenState extends State<PartyEntryScreen> {
     });
     final considerUser = Provider.of<MainProvider>(context, listen: false).user;
     final result = await PartyName.getPartyName(
-        considerUser.co, considerUser.yr, "", 'A5');
+        considerUser.co, considerUser.yr, "", 'A5',
+        balCd2: 'L5');
     if (result['message'] == 'success') {
       setState(() {
         _list = result['data'];
+        toShowItems = _list;
         _isWholeLoading = false;
       });
     } else {
@@ -68,7 +67,7 @@ class _PartyEntryScreenState extends State<PartyEntryScreen> {
         title: Text("Party Entry"),
       ),
       body: _isWholeLoading
-          ? Center(child: CircularProgressIndicator())
+          ? LoadingListPage()
           : Column(
               children: [
                 Container(
@@ -87,10 +86,13 @@ class _PartyEntryScreenState extends State<PartyEntryScreen> {
                   child: RefreshIndicator(
                     onRefresh: () => getAndSet(),
                     child: ListView.builder(
-                      itemCount: _list.length,
+                      itemCount: toShowItems.length,
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
-                        return PartyTile(party: _list[index]);
+                        return PartyTile(
+                          party: toShowItems[index],
+                          getAndSet: getAndSet,
+                        );
                       },
                     ),
                   ),
@@ -98,7 +100,13 @@ class _PartyEntryScreenState extends State<PartyEntryScreen> {
               ],
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          await Navigator.of(context).pushNamed(
+            PartyInputScreen.routeName,
+            arguments: {'data': "", 'enable': true},
+          );
+          getAndSet();
+        },
         child: Icon(
           Icons.add,
         ),

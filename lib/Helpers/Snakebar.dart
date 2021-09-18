@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showSnakeBar(
@@ -7,17 +8,13 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showSnakeBar(
       content: Text(
         text,
         textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       duration: const Duration(milliseconds: 2000),
-      width: 280.0,
-      backgroundColor: Theme.of(context).accentColor,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8.0, // Inner padding for SnackBar content.
-      ),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
+      behavior: SnackBarBehavior.fixed,
     ),
   );
 }

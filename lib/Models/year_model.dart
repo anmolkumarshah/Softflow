@@ -10,7 +10,9 @@ class Year {
   static Future<Map<String, dynamic>> getYears(
       {String query = '', required String co}) async {
     final UrlGlobal urlObject = new UrlGlobal(
-      p2: query != "" ? query : "select * from co_yr where Co = '$co'",
+      p2: query != ""
+          ? query
+          : "select * from co_yr where Co = '$co' order by Yr",
     );
     final url = urlObject.getUrl();
     try {

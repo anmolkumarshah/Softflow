@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:softflow_app/Helpers/Snakebar.dart';
+import 'package:softflow_app/Helpers/shimmerLoader.dart';
 import 'package:softflow_app/Models/truck_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
+import 'package:softflow_app/Screens/Common/truck_input_screen.dart';
 import 'package:softflow_app/Widgets/Truck/truckTile.dart';
 
 class TruckEntryScreen extends StatefulWidget {
@@ -14,27 +16,20 @@ class TruckEntryScreen extends StatefulWidget {
 
 class _TruckEntryScreenState extends State<TruckEntryScreen> {
   List<Truck> _list = [];
+  List<Truck> toShowItems = [];
   bool _isWholeLoading = false;
 
   handleSearch(String value) {
-    // List<DO> temp = items
-    //     .where(
-    //       (element) =>
-    //           (element.do_no.toLowerCase().contains(value.toLowerCase()) ||
-    //               element.consignee
-    //                   .toLowerCase()
-    //                   .contains(value.toLowerCase()) ||
-    //               element.toplc.toLowerCase().contains(value.toLowerCase()) ||
-    //               element.frmplc.toLowerCase().contains(value.toLowerCase())) &&
-    //           (dateFormatFromDataBase(element.do_dt)
-    //                   .isAfter(selectedDate.subtract(Duration(days: 4))) &&
-    //               dateFormatFromDataBase(element.do_dt)
-    //                   .isBefore(selectedDate.add(Duration(days: 1)))),
-    //     )
-    //     .toList();
-    // setState(() {
-    //   toShowItems = temp;
-    // });
+    List<Truck> temp = _list
+        .where((element) =>
+            (element.truckNo.toLowerCase().contains(value.toLowerCase()) ||
+                element.truck_no1.toLowerCase().contains(value.toLowerCase()) ||
+                element.driver_nm.toLowerCase().contains(value.toLowerCase()) ||
+                element.place.toLowerCase().contains(value.toLowerCase())))
+        .toList();
+    setState(() {
+      toShowItems = temp;
+    });
   }
 
   getAndSet() async {
@@ -46,6 +41,7 @@ class _TruckEntryScreenState extends State<TruckEntryScreen> {
     if (result['message'] == 'success') {
       setState(() {
         _list = result['data'];
+        toShowItems = _list;
         _isWholeLoading = false;
       });
     } else {
@@ -67,7 +63,7 @@ class _TruckEntryScreenState extends State<TruckEntryScreen> {
         title: Text("Truck Entry"),
       ),
       body: _isWholeLoading
-          ? Center(child: CircularProgressIndicator())
+          ? LoadingListPage()
           : Column(
               children: [
                 Container(
@@ -86,11 +82,12 @@ class _TruckEntryScreenState extends State<TruckEntryScreen> {
                   child: RefreshIndicator(
                     onRefresh: () => getAndSet(),
                     child: ListView.builder(
-                      itemCount: _list.length,
+                      itemCount: toShowItems.length,
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
                         return TruckTile(
-                          truck: _list[index],
+                          truck: toShowItems[index],
+                          getAndSet: getAndSet,
                         );
                       },
                     ),
@@ -99,7 +96,13 @@ class _TruckEntryScreenState extends State<TruckEntryScreen> {
               ],
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          await Navigator.of(context).pushNamed(
+            TruckInputScreen.routeName,
+            arguments: {'data': "", 'enable': true},
+          );
+          getAndSet();
+        },
         child: Icon(
           Icons.add,
         ),

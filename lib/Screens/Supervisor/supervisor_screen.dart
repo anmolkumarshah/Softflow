@@ -100,12 +100,21 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
       backgroundColor: Color(0xFFfaf3dd),
       body: Stack(
         children: [
+          Container(
+            height: double.infinity,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/images/back.jpg"),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
           ClipPath(
             child: Container(
               width: double.infinity,
               height: double.infinity,
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.only(
                   bottomRight: Radius.circular(30),
                   bottomLeft: Radius.circular(30),

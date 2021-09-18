@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
 import '../../Helpers/Snakebar.dart';
 import 'co_selection_screen.dart';
@@ -53,9 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: NetworkImage(
-              "https://cdn.pixabay.com/photo/2016/03/24/17/46/highway-1277246__340.jpg",
-            ),
+            image: AssetImage("assets/images/back.jpg"),
             fit: BoxFit.cover,
           ),
         ),

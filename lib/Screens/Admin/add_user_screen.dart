@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:softflow_app/Helpers/Snakebar.dart';
+import 'package:softflow_app/Helpers/shimmerLoader.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Screens/Admin/registration_screen.dart';
 import 'package:softflow_app/Widgets/User/userTile.dart';
@@ -60,9 +61,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
         title: Text("User Listing"),
       ),
       body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
+          ? LoadingListPage()
           : Column(
               children: [
                 Container(
@@ -87,15 +86,16 @@ class _AddUserScreenState extends State<AddUserScreen> {
                       mainAxisSpacing: 5,
                       physics: BouncingScrollPhysics(),
                       padding: EdgeInsets.all(8.0),
-                      children:
-                          toShowItems.map((data) => UserTile(data)).toList(),
+                      children: toShowItems
+                          .map((data) => UserTile(data, getAndSet))
+                          .toList(),
                     ),
                   ),
                 ),
               ],
             ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Theme.of(context).accentColor,
+        backgroundColor: Theme.of(context).colorScheme.secondary,
         onPressed: () {
           Navigator.of(context)
               .pushNamed(RegistrationScreen.routeName, arguments: {

@@ -17,7 +17,7 @@ class OptionWidget extends StatelessWidget {
       child: new Container(
         decoration: new BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: Theme.of(context).accentColor,
+          color: Theme.of(context).colorScheme.secondary,
           boxShadow: [],
         ),
         child: Center(

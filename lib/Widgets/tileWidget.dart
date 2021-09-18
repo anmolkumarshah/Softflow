@@ -78,7 +78,7 @@ class _TileWidgetState extends State<TileWidget> {
       child: Column(
         children: [
           ListTile(
-            tileColor: Theme.of(context).primaryColor,
+            tileColor: Theme.of(context).colorScheme.primary,
             leading: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -161,7 +161,7 @@ class _TileWidgetState extends State<TileWidget> {
               : _isTapped
                   ? widget.isDispatch
                       ? CheckboxListTile(
-                          tileColor: Theme.of(context).primaryColor,
+                          tileColor: Theme.of(context).colorScheme.primary,
                           value: _isVehDispatched,
                           title: Text(
                             "To Dispatch Vehicle?",
@@ -176,7 +176,7 @@ class _TileWidgetState extends State<TileWidget> {
                           ),
                         )
                       : CheckboxListTile(
-                          tileColor: Theme.of(context).primaryColor,
+                          tileColor: Theme.of(context).colorScheme.primary,
                           value: _isVehReached,
                           title: Text(
                             "Is Vehicle Reached?",

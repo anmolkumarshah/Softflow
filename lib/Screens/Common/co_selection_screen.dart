@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:softflow_app/Models/company_model.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Models/year_model.dart';
@@ -54,6 +55,9 @@ class _CoSelectionScreenState extends State<CoSelectionScreen> {
 
   void fetchCompany() async {
     user = Provider.of<MainProvider>(context, listen: false).user;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('email', user.email);
+    prefs.setString('password', user.password);
     Map<String, dynamic> result = await Company.getCompany();
     if (result['message'] == 'success') {
       List<Company> list = result['data'];
@@ -93,15 +97,13 @@ class _CoSelectionScreenState extends State<CoSelectionScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: NetworkImage(
-              "https://cdn.pixabay.com/photo/2016/03/24/17/46/highway-1277246__340.jpg",
-            ),
+            image: AssetImage("assets/images/back.jpg"),
             fit: BoxFit.cover,
           ),
         ),
         child: Center(
           child: new Container(
-            height: 250,
+            height: 267,
             margin: EdgeInsets.all(20),
             padding: EdgeInsets.all(20),
             decoration: new BoxDecoration(
@@ -119,69 +121,80 @@ class _CoSelectionScreenState extends State<CoSelectionScreen> {
                   children: [
                     new Text(
                       "Select Company",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 20,
                       ),
                     ),
                     coList.length == 0
                         ? CircularProgressIndicator()
-                        : DropdownButton(
-                            value: _value,
-                            items: coList
-                                .map((item) => DropdownMenuItem(
-                                      child: FittedBox(
-                                        child: Text(item.name),
-                                      ),
-                                      value: item.id,
-                                    ))
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _coYr = [];
-                              }); // for co name refresh and yr refresh
-                              user.co = value.toString();
-                              fetchCoYear();
-                              setState(() {
-                                _value = value;
-                              });
-                              _year = null;
-                            },
+                        : DropdownButtonHideUnderline(
+                            child: DropdownButton(
+                              value: _value,
+                              items: coList.map((item) {
+                                // print("name" + item + ".");
+                                return DropdownMenuItem(
+                                  child: Text(item.name),
+                                  value: item.id,
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _coYr = [];
+                                }); // for co name refresh and yr refresh
+                                user.co = value.toString();
+                                fetchCoYear();
+                                setState(() {
+                                  _value = value;
+                                });
+                                _year = null;
+                              },
+                            ),
                           ),
                     new SizedBox(
                       height: 20,
                     ),
                     new Text(
                       "Select Year",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 20,
                       ),
                     ),
                     _coYr.length == 0
                         ? CircularProgressIndicator()
-                        : DropdownButton(
-                            value: _year == null
-                                ? _coYr[_coYr.length - 1].year
-                                : _year,
-                            items: _coYr
-                                .map((item) => DropdownMenuItem(
-                                      child: FittedBox(
-                                        child: Text(
-                                            (item.year as String).substring(1)),
-                                      ),
-                                      value: item.year,
-                                    ))
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                user.yr = (value as String).substring(1);
-                                _year = value;
-                              });
-                            },
+                        : DropdownButtonHideUnderline(
+                            child: DropdownButton(
+                              value: _year == null
+                                  ? _coYr[_coYr.length - 1].year
+                                  : _year,
+                              items: _coYr
+                                  .map((item) => DropdownMenuItem(
+                                        child: FittedBox(
+                                          child: Text((item.year as String)
+                                              .substring(1)),
+                                        ),
+                                        value: item.year,
+                                      ))
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  user.yr = (value as String).substring(1);
+                                  _year = value;
+                                });
+                              },
+                            ),
                           ),
+                    Divider(
+                      color: Colors.grey,
+                    ),
                     _coYr.length != 0
-                        ? ElevatedButton(
+                        ? TextButton(
                             onPressed: handleContinue,
-                            child: Text("Continue"),
+                            child: Text(
+                              "Continue",
+                              textAlign: TextAlign.center,
+                            ),
                           )
                         : Text("")
                   ],

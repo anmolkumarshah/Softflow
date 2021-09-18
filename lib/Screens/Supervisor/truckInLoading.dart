@@ -42,6 +42,7 @@ class TruckInLoading extends StatelessWidget {
             final data = suggestion as DO;
             return DoItem(
               receivedDO: data,
+              getAndSet: () {},
             );
           },
           onSuggestionSelected: (suggestion) {

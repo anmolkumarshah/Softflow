@@ -16,13 +16,12 @@ Future<TypeAheadField<Object>> _showAutoTextCompleteDropdown({
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          // fontSize: 25,
-        ),
+            // fontSize: 25,
+            ),
         border: OutlineInputBorder(),
       ),
       controller: controller,
       enabled: enable,
-
     ),
     suggestionsCallback: (pattern) async {
       return await suggestionCallback(pattern);
@@ -52,7 +51,7 @@ additionalAutoComplete({
   suggestionCallback,
   label,
   autoFocus = false,
-   controller,
+  controller,
   enable = true,
 }) {
   return name.getId() != '-1'
@@ -61,12 +60,11 @@ additionalAutoComplete({
             Container(
               padding: EdgeInsets.all(5),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(
-                  width: 1,
-                  color: Colors.grey,
-                )
-              ),
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    width: 1,
+                    color: Colors.grey,
+                  )),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -75,10 +73,12 @@ additionalAutoComplete({
                       Text(
                         text.toString().split(':')[0] + " : ",
                         style: TextStyle(
-                          // fontSize: 18,
-                        ),
+                            // fontSize: 18,
+                            ),
                       ),
-                     Text(
+                      Container(
+                        width: 150,
+                        child: Text(
                           text.toString().split(':')[1],
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
@@ -87,12 +87,12 @@ additionalAutoComplete({
                             // fontSize: 18,
                           ),
                         ),
+                      ),
                     ],
                   ),
-
                   IconButton(
                     onPressed: onPressCallback,
-                    icon: Icon(Icons.settings_backup_restore),
+                    icon: Icon(Icons.clear),
                   )
                 ],
               ),

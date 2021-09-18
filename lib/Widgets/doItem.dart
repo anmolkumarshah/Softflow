@@ -11,18 +11,23 @@ import 'package:softflow_app/Screens/Common/do_entry_screen.dart';
 // ignore: must_be_immutable
 class DoItem extends StatelessWidget {
   late DO receivedDO;
+  Function getAndSet;
+  late bool forTrafficDetailsColumns;
 
   DoItem({
     required this.receivedDO,
+    required this.getAndSet,
+    this.forTrafficDetailsColumns = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         final considerUser =
             Provider.of<MainProvider>(context, listen: false).user;
-        Navigator.of(context).pushNamed(DoEntryScreen.routeName, arguments: {
+        await Navigator.of(context)
+            .pushNamed(DoEntryScreen.routeName, arguments: {
           'data': receivedDO,
           'heading': (receivedDO).do_no,
           'enable': considerUser.deptCd1 == '0' || considerUser.deptCd1 == '1'
@@ -33,15 +38,20 @@ class DoItem extends StatelessWidget {
           'isSupervisor': considerUser.deptCd1 == '2' ? true : false,
           'isUpdate': considerUser.deptCd1 == '0' ? true : false,
           'isEntry': false,
+          'isDetailTraffic': forTrafficDetailsColumns,
+          'isUpdateButton': true,
         });
+        getAndSet();
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
         child: ListTile(
-          tileColor:
-              this.receivedDO.broker != '-1' && this.receivedDO.truckid != '-1'
+          tileColor: this.receivedDO.compl == 1
+              ? Colors.brown[400]
+              : this.receivedDO.broker != '-1' &&
+                      this.receivedDO.truckid != '-1'
                   ? Colors.green
-                  : Theme.of(context).primaryColor,
+                  : Theme.of(context).colorScheme.primary,
           contentPadding:
               EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
           leading: Column(
@@ -50,9 +60,10 @@ class DoItem extends StatelessWidget {
               Container(
                 padding: EdgeInsets.only(right: 12.0),
                 decoration: new BoxDecoration(
-                    border: new Border(
-                        right:
-                            new BorderSide(width: 1.0, color: Colors.white24))),
+                  border: new Border(
+                    right: new BorderSide(width: 1.0, color: Colors.white24),
+                  ),
+                ),
                 child: Icon(
                   Icons.description,
                   color: Colors.white,
@@ -69,10 +80,13 @@ class DoItem extends StatelessWidget {
                   SizedBox(
                     width: 5,
                   ),
-                  Text(
-                    this.receivedDO.do_no,
-                    style: TextStyle(color: Colors.white),
-                    softWrap: true,
+                  Flexible(
+                    child: Text(
+                      this.receivedDO.do_no,
+                      style: TextStyle(color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: true,
+                    ),
                   ),
                 ],
               ),
@@ -187,7 +201,7 @@ class DoItem extends StatelessWidget {
                       );
                     }
                   }
-                  return Text("Error");
+                  return Text("Error Anmol");
                 },
               ),
               Row(

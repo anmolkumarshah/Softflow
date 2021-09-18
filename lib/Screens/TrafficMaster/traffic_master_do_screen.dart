@@ -16,7 +16,7 @@ class TrafficMasterDoScreen extends StatelessWidget {
         Provider.of<MainProvider>(context, listen: false).user;
     return Scaffold(
       appBar: new AppBar(
-        title: Text("Traffic Master DO Screen"),
+        title: Text("Truck Not Alloted"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -27,30 +27,30 @@ class TrafficMasterDoScreen extends StatelessWidget {
                 border: OutlineInputBorder(), labelText: "Search by DO number"),
           ),
           suggestionsCallback: (pattern) async {
-            final result =
-                await DO.getAllUnAllotedDo(pattern, currentUser.deptCd);
-            return result['data'];
+            final result = await DO.getAllUnAllotedDo('', currentUser.deptCd);
+            List<DO> updatedResult = (result['data'] as List<DO>)
+                .where((element) => element.do_no
+                    .toLowerCase()
+                    .contains(pattern.toString().toLowerCase()))
+                .toList();
+            return updatedResult;
           },
           itemBuilder: (context, suggestion) {
             final data = suggestion as DO;
             return DoItem(
               receivedDO: data,
+              getAndSet: () {},
+              forTrafficDetailsColumns: false,
             );
           },
           onSuggestionSelected: (suggestion) {
             Navigator.of(context).pushNamed(
               DoEntryScreen.routeName,
               arguments: {
-                'data': suggestion,
-                'heading': (suggestion as DO).do_no,
-                'enable': false,
-                'isTrafficMaster': false,
-                'isAll': false,
-                'isSupervisor': false,
+                //  ye kuch ni karra h
               },
             );
           },
-          hideSuggestionsOnKeyboardHide: false,
         ),
       ),
     );

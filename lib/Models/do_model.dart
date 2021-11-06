@@ -57,6 +57,15 @@ class DO {
   double truck_wt;
   double dies;
 
+  double rate;
+  double frt;
+  double penalty;
+  double advperc;
+  double actwt;
+
+  int adv_typ;
+  int lefdays;
+
   DO({
     this.uid = '-1',
     this.consecd = '-1',
@@ -108,6 +117,13 @@ class DO {
     this.adv = 0,
     this.dies = 0,
     this.truck_wt = 0,
+    this.advperc = 0,
+    this.frt = 0,
+    this.penalty = 0,
+    this.rate = 0,
+    this.actwt = 0,
+    this.adv_typ = 0,
+    this.lefdays = 0,
   });
 
   DO clone(DO refDO) {
@@ -162,6 +178,13 @@ class DO {
     refDO.adv = this.adv;
     refDO.dies = this.dies;
     refDO.truck_wt = this.truck_wt;
+    refDO.advperc = this.advperc;
+    refDO.frt = this.frt;
+    refDO.penalty = this.penalty;
+    refDO.rate = this.rate;
+    refDO.actwt = this.actwt;
+    refDO.actwt = this.actwt;
+    refDO.lefdays = this.lefdays;
 
     return refDO;
   }
@@ -169,9 +192,10 @@ class DO {
   static Future<Map<String, dynamic>> getAllUnAllotedDo(
       String pattern, String branch) async {
     final UrlGlobal urlObject = new UrlGlobal(
-      p2: "select * from domast where do_no like '%$pattern%' and (broker in (0,-1) and truckid in (0,-1)) and br_cd = $branch",
+      p2: "select * from domast where do_no like '%$pattern%' and (broker in (0,-1) and truckid in (0,-1)) and br_cd = $branch order by do_dt desc",
     );
     final url = urlObject.getUrl();
+    print(url);
     try {
       final result = await getMethod(url);
       final data = json.decode(result.body);
@@ -226,6 +250,16 @@ class DO {
                 Veh_intime: record['Veh_intime'].toString(),
                 br_cd:
                     record['br_cd'] == null ? '0' : record['br_cd'].toString(),
+                adv: record['adv'] == null ? 0 : record['adv'],
+                dies: record['dies'] == null ? 0 : record['dies'],
+                truck_wt: record['truck_wt'] == null ? 0 : record['truck_wt'],
+                advperc: record['advperc'] != null ? record['advperc'] : 0,
+                frt: record['frt'] != null ? record['frt'] : 0,
+                penalty: record['penalty'] != null ? record['penalty'] : 0,
+                rate: record['rate'] != null ? record['rate'] : 0,
+                actwt: record['actwt'] != null ? record['actwt'] : 0,
+                adv_typ: record['adv_typ'] != null ? record['adv_typ'] : 0,
+                lefdays: record['lefdays'] != null ? record['lefdays'] : 0,
               ))
           .toList();
       return {"message": 'success', 'data': doList};
@@ -236,8 +270,9 @@ class DO {
   }
 
   static Future<Map<String, dynamic>> getAllDO(String pattern,
-      {String branch = '0'}) async {
-    String query = "select * from domast order by do_dt desc";
+      {String query = "select * from domast order by uid desc",
+      String branch = '0'}) async {
+    // String query = "select * from domast order by uid desc";
     if (branch != '0' && branch != '1') {
       query = "select * from domast where br_cd = $branch";
     }
@@ -301,6 +336,13 @@ class DO {
               adv: record['adv'] == null ? 0 : record['adv'],
               dies: record['dies'] == null ? 0 : record['dies'],
               truck_wt: record['truck_wt'] == null ? 0 : record['truck_wt'],
+              advperc: record['advperc'] != null ? record['advperc'] : 0,
+              frt: record['frt'] != null ? record['frt'] : 0,
+              penalty: record['penalty'] != null ? record['penalty'] : 0,
+              rate: record['rate'] != null ? record['rate'] : 0,
+              actwt: record['actwt'] != null ? record['actwt'] : 0,
+              adv_typ: record['adv_typ'] != null ? record['adv_typ'] : 0,
+              lefdays: record['lefdays'] != null ? record['lefdays'] : 0,
             ),
           )
           .toList();
@@ -313,13 +355,14 @@ class DO {
 
   static Future<Map<String, dynamic>> supervisorAllDO(String query) async {
     final UrlGlobal urlObject = new UrlGlobal(
-      // p2: "select * from domast where acc_id in (${currentUser.acc_id}, ${currentUser.acc_id1}, ${currentUser.acc_id2}) and do_no like '%$pattern%'",
       p2: query,
     );
     final url = urlObject.getUrl();
+    print(url);
     try {
       final result = await getMethod(url);
       final data = json.decode(result.body);
+
       final doList = (data as List<dynamic>)
           .map((record) => new DO(
                 inddt: record['inddt'].toString().trim(),
@@ -370,8 +413,19 @@ class DO {
                 Veh_intime: record['Veh_intime'].toString(),
                 br_cd:
                     record['br_cd'] == null ? '1' : record['br_cd'].toString(),
+                advperc: record['advperc'] != null ? record['advperc'] : 0,
+                frt: record['frt'] != null ? record['frt'] : 0,
+                penalty: record['penalty'] != null ? record['penalty'] : 0,
+                rate: record['rate'] != null ? record['rate'] : 0,
+                actwt: record['actwt'] != null ? record['actwt'] : 0,
+                adv: record['adv'] != null ? record['adv'] : 0,
+                dies: record['dies'] != null ? record['dies'] : 0,
+                truck_wt: record['truck_wt'] != null ? record['truck_wt'] : 0,
+                adv_typ: record['adv_typ'] != null ? record['adv_typ'] : 0,
+                lefdays: record['lefdays'] != null ? record['lefdays'] : 0,
               ))
           .toList();
+      print(url);
       return {"message": 'success', 'data': doList};
     } catch (e) {
       print(e);
@@ -407,7 +461,9 @@ class DO {
         toplc = '${this.toplc}',itemnm = '${this.itemnm}',
         consrcd = ${this.consrcd},consecd = ${this.consecd},indno = '${this.indno}',
         inddt = '${this.inddt}',do_no = '${this.do_no}',
-        Wt = ${this.Wt},br_cd = '${this.br_cd}',rt = ${this.rt}
+        Wt = ${this.Wt},br_cd = '${this.br_cd}',rt = ${this.rt},
+        rate = ${this.rate}, frt = ${this.frt}, penalty = ${this.penalty}, advperc = ${this.advperc},
+        adv_typ = ${this.adv_typ}
 
      where uid = '${this.uid}'; 
      
@@ -440,9 +496,11 @@ class DO {
      set grn_no1 = '${this.grn_no1}', GRN_NO = ${this.GRN_NO}, INV_no = '${this.INV_no}',
      inv_date = '${this.inv_date}', EwayNo = '${this.EwayNo}', EwayQrcode = '${this.EwayQrcode}',
      Consignor_GST = '${this.Consignor_GST}', valid_till = '${this.valid_till}',
-     drv_name = '${this.drv_name}', drv_mobile = '${this.drv_mobile}'
+     drv_name = '${this.drv_name}', drv_mobile = '${this.drv_mobile}',
+     penalty = ${this.penalty}, frt = ${this.frt}, adv = ${this.adv}, actwt = ${this.actwt},
+     advperc = ${this.advperc}, rate = ${this.rate}, rt = ${this.rt}
      where uid = '${this.uid}' and do_no = '${this.do_no}'; 
-     
+
      """;
 
     final UrlGlobal urlObject = new UrlGlobal(
@@ -454,7 +512,8 @@ class DO {
       final url = urlObject.getUrl();
       final result = await getMethod(url);
       final data = json.decode(result.body);
-
+      print(query);
+      print(data);
       return {"message": data['status']};
     } catch (e) {
       return {"message": "Error occurred while updating DO"};
@@ -514,14 +573,17 @@ class DO {
     final query =
         """ insert into domast(uid,do_no,do_dt,acc_id,consignee,frmplc,toplc,
         frdt,todt,tmt,rt,deltmt,compl,doamt,place_rt,lias_rt,km_levl,shr_perc,
-        pono,itemnm,consrcd,consecd,indno,inddt,broker,truckid,Wt, br_cd) 
+        pono,itemnm,consrcd,consecd,indno,inddt,broker,truckid,Wt, br_cd, 
+        advperc, rate, adv, lefdays) 
         values ('${this.uid}','${this.do_no}','${this.do_dt}','${this.acc_id}',
-        '${this.consignee}','${this.frmplc}',
+        '${this.acc_id}','${this.frmplc}',
         '${this.toplc}','${this.frdt}','${this.todt}',${this.tmt},${this.rt},
         ${this.deltmt},${this.compl},${this.doamt},${this.place_rt},${this.lias_rt},
         ${this.km_levl},${this.shr_perc},'${this.pono}','${this.itemnm}',
         ${this.consrcd},${this.consecd},'${this.indno}','${this.inddt}',
-        '${this.broker}','${this.truckid}',${this.Wt},'${this.br_cd}' ) """;
+        '${this.broker}','${this.truckid}',${this.Wt},'${this.br_cd}', 
+        ${this.advperc}, ${this.rate}, ${this.adv}, '${this.lefdays}')
+         """;
 
     print(query);
 

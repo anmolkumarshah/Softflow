@@ -51,7 +51,7 @@ class TruckTile extends StatelessWidget {
         onTap: () async {
           await Navigator.of(context).pushNamed(
             TruckInputScreen.routeName,
-            arguments: {'data': truck, 'enable': false},
+            arguments: {'data': truck, 'enable': true},
           );
           getAndSet();
         },

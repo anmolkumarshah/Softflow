@@ -7,42 +7,70 @@ import 'package:softflow_app/Models/partyName_model.dart';
 import 'package:softflow_app/Models/truck_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
 import 'package:softflow_app/Screens/Common/do_entry_screen.dart';
+import 'package:softflow_app/Screens/Supervisor/superVisorDo.dart';
 
 // ignore: must_be_immutable
 class DoItem extends StatelessWidget {
   late DO receivedDO;
   Function getAndSet;
   late bool forTrafficDetailsColumns;
+  bool isAll;
+  bool isSup;
+
+  checkPenalty(String dt, int n) {
+    double charge = 1000;
+    DateTime limitDay = dateFormatFromDataBase(dt).add(Duration(days: n));
+    if (DateTime.now().isBefore(limitDay) || DateTime.now() == limitDay) {
+      return '0';
+    } else {
+      Duration diff = DateTime.now().difference(limitDay);
+      return (charge * diff.inDays).toString();
+    }
+  }
 
   DoItem({
     required this.receivedDO,
     required this.getAndSet,
     this.forTrafficDetailsColumns = true,
+    this.isAll = true,
+    this.isSup = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    var panelty = checkPenalty(receivedDO.do_dt, receivedDO.lefdays);
     return GestureDetector(
-      onTap: () async {
-        final considerUser =
-            Provider.of<MainProvider>(context, listen: false).user;
-        await Navigator.of(context)
-            .pushNamed(DoEntryScreen.routeName, arguments: {
-          'data': receivedDO,
-          'heading': (receivedDO).do_no,
-          'enable': considerUser.deptCd1 == '0' || considerUser.deptCd1 == '1'
-              ? true
-              : false,
-          'isTrafficMaster': considerUser.deptCd1 == '1' ? true : false,
-          'isAll': true,
-          'isSupervisor': considerUser.deptCd1 == '2' ? true : false,
-          'isUpdate': considerUser.deptCd1 == '0' ? true : false,
-          'isEntry': false,
-          'isDetailTraffic': forTrafficDetailsColumns,
-          'isUpdateButton': true,
-        });
-        getAndSet();
-      },
+      onTap: this.isSup
+          ? () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SuperVisorDo(
+                      receivedDo: this.receivedDO,
+                    ),
+                  ));
+            }
+          : () async {
+              final considerUser =
+                  Provider.of<MainProvider>(context, listen: false).user;
+              await Navigator.of(context)
+                  .pushNamed(DoEntryScreen.routeName, arguments: {
+                'data': receivedDO,
+                'heading': (receivedDO).do_no,
+                'enable':
+                    considerUser.deptCd1 == '0' || considerUser.deptCd1 == '1'
+                        ? true
+                        : false,
+                'isTrafficMaster': considerUser.deptCd1 == '1' ? true : false,
+                'isAll': isAll,
+                'isSupervisor': considerUser.deptCd1 == '2' ? true : false,
+                'isUpdate': considerUser.deptCd1 == '0' ? true : false,
+                'isEntry': false,
+                'isDetailTraffic': forTrafficDetailsColumns,
+                'isUpdateButton': true,
+              });
+              getAndSet();
+            },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
         child: ListTile(
@@ -55,7 +83,7 @@ class DoItem extends StatelessWidget {
           contentPadding:
               EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
           leading: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Container(
                 padding: EdgeInsets.only(right: 12.0),
@@ -69,7 +97,7 @@ class DoItem extends StatelessWidget {
                   color: Colors.white,
                   size: 35,
                 ),
-              )
+              ),
             ],
           ),
           title: Column(
@@ -134,40 +162,41 @@ class DoItem extends StatelessWidget {
             ],
           ),
           subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              FutureBuilder(
-                future: PartyName.getNameOfPartyById(this.receivedDO.consecd),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Column(
-                      children: [
-                        SizedBox(
-                          height: 5,
-                        ),
-                        LinearProgressIndicator(
-                          minHeight: 3,
-                        ),
-                      ],
-                    );
-                  } else if (snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.hasData) {
-                      return Row(
-                        children: <Widget>[
-                          Icon(Icons.person, color: Colors.white),
-                          SizedBox(
-                            width: 5,
-                          ),
-                          Expanded(
-                            child: Text(snapshot.data.toString(),
-                                style: TextStyle(color: Colors.white)),
-                          )
-                        ],
-                      );
-                    }
-                  }
-                  return Text("Error");
-                },
-              ),
+              // FutureBuilder(
+              //   future: PartyName.getNameOfPartyById(this.receivedDO.consecd),
+              //   builder: (context, snapshot) {
+              //     if (snapshot.connectionState == ConnectionState.waiting) {
+              //       return Column(
+              //         children: [
+              //           SizedBox(
+              //             height: 5,
+              //           ),
+              //           LinearProgressIndicator(
+              //             minHeight: 3,
+              //           ),
+              //         ],
+              //       );
+              //     } else if (snapshot.connectionState == ConnectionState.done) {
+              //       if (snapshot.hasData) {
+              //         return Row(
+              //           children: <Widget>[
+              //             Icon(Icons.person, color: Colors.white),
+              //             SizedBox(
+              //               width: 5,
+              //             ),
+              //             Expanded(
+              //               child: Text(snapshot.data.toString(),
+              //                   style: TextStyle(color: Colors.white)),
+              //             )
+              //           ],
+              //         );
+              //       }
+              //     }
+              //     return Text("Error");
+              //   },
+              // ),
               FutureBuilder(
                 future: PartyName.getNameOfPartyById(this.receivedDO.consrcd),
                 builder: (context, snapshot) {
@@ -236,7 +265,27 @@ class DoItem extends StatelessWidget {
                       style: TextStyle(color: Colors.white)),
                 ],
               ),
+              panelty != '0'
+                  ? Chip(
+                      label: Text(
+                        'Penalty $panelty',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      backgroundColor: Colors.red,
+                    )
+                  : SizedBox(
+                      height: 0,
+                    ),
             ],
+          ),
+          trailing: Chip(
+            label: Text(
+              "qty  " + receivedDO.Wt.toString(),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
       ),

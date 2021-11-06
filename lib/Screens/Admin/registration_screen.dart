@@ -182,7 +182,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   lock(User userItem) async {
-    print("Yes");
     initCount++;
     _nameController = TextEditingController(text: userItem.name);
     _emailController = TextEditingController(text: userItem.email);
@@ -233,7 +232,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           selectedColor: Theme.of(context).colorScheme.primary,
           labelStyle: TextStyle(
             color: Colors.black,
-            fontWeight: FontWeight.bold,
           ),
           label: Text(item.name),
           selected: _selectedPartyNames.any((element) => element.id == item.id),
@@ -261,7 +259,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           selectedColor: Theme.of(context).colorScheme.primary,
           labelStyle: TextStyle(
             color: Colors.black,
-            fontWeight: FontWeight.bold,
           ),
           label: Text(item.name),
           selected:
@@ -474,7 +471,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.only(left: 15),
@@ -482,35 +479,52 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         "Select Parties",
                                         style: TextStyle(
                                           fontSize: 18,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
                                     SizedBox(
                                       width: 20,
                                     ),
+                                    Divider(
+                                      color: Colors.black,
+                                    ),
                                     Wrap(
                                       children: _partyChoiceList(),
-                                    )
+                                    ),
+                                    Divider(
+                                      color: Colors.black,
+                                    ),
                                   ],
                                 ),
                                 Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Padding(
-                                      padding: const EdgeInsets.only(left: 15),
+                                      padding: const EdgeInsets.only(
+                                        left: 15,
+                                        top: 20,
+                                      ),
                                       child: Text(
                                         "Select From Stations",
                                         style: TextStyle(
                                           fontSize: 18,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
                                     SizedBox(
                                       width: 20,
                                     ),
+                                    Divider(
+                                      color: Colors.black,
+                                    ),
                                     Wrap(
                                       children: _locationChoiceList(),
-                                    )
+                                    ),
+                                    Divider(
+                                      color: Colors.black,
+                                    ),
                                   ],
                                 )
                               ],

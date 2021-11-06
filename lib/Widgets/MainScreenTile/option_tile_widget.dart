@@ -32,6 +32,8 @@ class OptionWidget extends StatelessWidget {
                 fontFamily: 'Notoserif',
                 fontSize: 30,
               ),
+              softWrap: true,
+              maxLines: 2,
             ),
           ),
         ),

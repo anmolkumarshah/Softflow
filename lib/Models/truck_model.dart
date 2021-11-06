@@ -93,6 +93,34 @@ class Truck {
     }
   }
 
+  Future update(String co) async {
+    final query = """         
+        update z_trk_000$co
+        set 
+        truck_no = '${this.truckNo}', owner = '${this.owner}', addr = '${this.addr}', 
+        place = '${this.place}', pan_no = '${this.panNo}', own = ${this.own}, 
+        truck_no1 = '${this.truck_no1}', driver_nm = '${this.driver_nm}', 
+        driver_mobile = '${this.driver_mobile}'
+        where 
+        uid = ${this.uid}
+        """;
+    final UrlGlobal urlObject = new UrlGlobal(
+      p2: query,
+      p1: '1',
+      p: '2',
+    );
+    try {
+      final url = urlObject.getUrl();
+      final result = await getMethod(url);
+      final data = json.decode(result.body);
+      print(url);
+      print(data);
+      return {"message": data['status']};
+    } catch (e) {
+      return {"message": "Error occurred while Updating Truck"};
+    }
+  }
+
   Future save(String co) async {
     final preResult = await check("""
       select * from  z_trk_000$co where truck_no = '${this.truckNo}'
@@ -126,7 +154,6 @@ class Truck {
         ) 
         
         """;
-      print(query);
       final UrlGlobal urlObject = new UrlGlobal(
         p2: query,
         p1: '1',
@@ -136,10 +163,8 @@ class Truck {
         final url = urlObject.getUrl();
         final result = await getMethod(url);
         final data = json.decode(result.body);
-        print(data);
         return {"message": data['status']};
       } catch (e) {
-        print(e);
         return {"message": "Error occurred while saving Truck"};
       }
     } else {

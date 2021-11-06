@@ -6,6 +6,7 @@ import 'package:softflow_app/Helpers/Snakebar.dart';
 import 'package:softflow_app/Models/company_model.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
+import 'package:softflow_app/Screens/Common/truck_entry_screen.dart';
 import 'package:softflow_app/Screens/Supervisor/truckDispatchScreen.dart';
 import 'package:softflow_app/Screens/Supervisor/truckInLoading.dart';
 import 'package:softflow_app/Screens/Supervisor/truckToReachScreen.dart';
@@ -126,15 +127,6 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        // Text(
-                        //   "Hi,",
-                        //   style: hiStyle,
-                        // ),
-                      ],
-                    ),
                     Flexible(
                       child: Text(
                         this.userName,
@@ -179,22 +171,7 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
                               ),
                             ],
                           ),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.start,
-                    //   children: [
-                    //     Icon(
-                    //       Icons.event,
-                    //       color: Colors.white,
-                    //     ),
-                    //     SizedBox(
-                    //       width: 10,
-                    //     ),
-                    //     Text(
-                    //       "Selected Year",
-                    //       style: subTitleStyle,
-                    //     ),
-                    //   ],
-                    // ),
+
                     Row(
                       children: [
                         Icon(
@@ -230,12 +207,16 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
                         routeName: TruckToReachScreen.routeName,
                       ),
                       new OptionWidget(
-                        text: "Trucks In Loading",
+                        text: "Loading Entry",
                         routeName: TruckInLoading.routeName,
                       ),
+                      // new OptionWidget(
+                      //   text: "Truck Dispatch Entry",
+                      //   routeName: TruckDispatchScreen.routeName,
+                      // ),
                       new OptionWidget(
-                        text: "Truck Dispatch Entry",
-                        routeName: TruckDispatchScreen.routeName,
+                        text: "Truck Entry",
+                        routeName: TruckEntryScreen.routeName,
                       ),
                     ],
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -245,7 +226,7 @@ class _SupervisorScreenState extends State<SupervisorScreen> {
                       childAspectRatio: 4,
                     ),
                   ),
-                  height: 350,
+                  height: 450,
                 ),
               ],
             ),

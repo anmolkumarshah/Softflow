@@ -33,9 +33,12 @@ class TruckInLoading extends StatelessWidget {
             select * from domast where acc_id in (${currentUser.acc_id}, 
             ${currentUser.acc_id1}, ${currentUser.acc_id2}) and Veh_reached
              = 'true' and compl = 'false' and do_no like 
-            '%$pattern%' and br_cd = ${currentUser.deptCd}
+            '%$pattern%' 
+            order by do_dt desc
             
             """);
+
+            // and br_cd = ${currentUser.deptCd}
             return result['data'];
           },
           itemBuilder: (context, suggestion) {
@@ -43,6 +46,7 @@ class TruckInLoading extends StatelessWidget {
             return DoItem(
               receivedDO: data,
               getAndSet: () {},
+              isSup: true,
             );
           },
           onSuggestionSelected: (suggestion) {

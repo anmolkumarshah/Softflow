@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:async/async.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:softflow_app/Helpers/Snakebar.dart';
 import 'package:softflow_app/Helpers/TextFieldHelper.dart';
-import 'package:softflow_app/Helpers/captureImage.dart';
 import 'package:softflow_app/Helpers/dateFormatfromDataBase.dart';
 import 'package:softflow_app/Helpers/formatDate.dart';
 import 'package:softflow_app/Helpers/shimmerLoader.dart';
@@ -63,19 +64,12 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
 
   //
 
-  TextEditingController _grnNo1 = TextEditingController(text: "");
-  TextEditingController _grnNo = TextEditingController(text: "");
-  TextEditingController _invNo = TextEditingController(text: "");
-  TextEditingController _ewayNo = TextEditingController(text: "");
-  TextEditingController _ewayQrCode = TextEditingController(text: "");
-  TextEditingController _consignerGst = TextEditingController(text: "");
-  TextEditingController _drvName = TextEditingController(text: "");
-  TextEditingController _drvMobile = TextEditingController(text: "");
-
   TextEditingController _truckWt = TextEditingController(text: "");
   TextEditingController _rate = TextEditingController(text: "");
   TextEditingController _advance = TextEditingController(text: "");
   TextEditingController _diesel = TextEditingController(text: "");
+
+  TextEditingController _liftingDays = TextEditingController(text: "1");
 
   bool _isVehReached = false;
   bool _isVehLoading = false;
@@ -84,12 +78,12 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
     if (_doController.value.text != '' &&
         _qtyController.value.text != '' &&
         toMade.acc_id != '-1' &&
-        toMade.consignee != '-1' &&
+        // toMade.consignee != '-1' &&
+        // && toMade.consecd != '-1'
         toMade.consrcd != '-1' &&
         toMade.toplc != '-1' &&
         toMade.frmplc != '-1' &&
-        toMade.itemnm != '-1' &&
-        toMade.consecd != '-1') {
+        toMade.itemnm != '-1') {
       toMade.do_no = _doController.value.text;
       toMade.do_dt = formateDate(_selectedDate);
       toMade.frdt = formateDate(_selectedDate);
@@ -97,6 +91,7 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
 
       toMade.inddt = formateDate(_selectedDate);
       toMade.Wt = double.parse(_qtyController.value.text);
+      toMade.lefdays = int.parse(_liftingDays.value.text);
       toMade.br_cd = considerUser.deptCd == '0' || considerUser.deptCd == '1'
           ? _selectedBranch
           : considerUser.deptCd;
@@ -109,7 +104,6 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
         _isLoading = true;
       });
       await toMade.getSetUid();
-      print(toMade.do_dt);
       Map<String, dynamic> result = await toMade.save();
       if (result['message'] == 'success') {
         showSnakeBar(context, "D.O saved successfully");
@@ -123,37 +117,38 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
     }
   }
 
-  handleUpdate(DO oldDo) async {
+  handleUpdate(DO oldDo, {bool byTraff = false}) async {
     toMade = oldDo;
     try {
+      if (byTraff &&
+          (_selectedBroker.id == '-1' || _selectedTruck.uid == '-1')) {
+        throw "Select Truck And Broker";
+      }
       if (_doController.value.text != '' &&
           _qtyController.value.text != '' &&
           toMade.acc_id != '-1' &&
-          toMade.consignee != '-1' &&
+          // toMade.consignee != '-1' &&
+          // && toMade.consecd != '-1'
           toMade.consrcd != '-1' &&
           toMade.toplc != '-1' &&
           toMade.frmplc != '-1' &&
-          toMade.itemnm != '-1' &&
-          toMade.consecd != '-1') {
+          toMade.itemnm != '-1') {
         toMade.do_no = _doController.value.text;
         toMade.do_dt = formateDate(_selectedDate);
-        // oldDo.acc_id = _selectedParty.getId();
-        // oldDo.consignee = _selectedConsignee.showName();
-        // oldDo.frmplc = _stationFrom.showName();
-        // oldDo.toplc = _stationTo.showName();
+
         toMade.frdt = formateDate(_selectedDate);
         toMade.todt = formateDate(_selectedDate);
-        // oldDo.itemnm = _selectedProduct.showName();
-        // oldDo.consrcd = _selectedConsecd.getId();
-        // oldDo.consecd = _selectedConsignee.getId();
+
         toMade.inddt = formateDate(_selectedDate);
-        // oldDo.broker = _selectedBroker.getId().toString();
-        // oldDo.truckid = _selectedTruck.getId().toString();
-        toMade.adv = double.parse(_advance.value.text);
+
         toMade.truck_wt = double.parse(_truckWt.value.text);
         toMade.dies = double.parse(_diesel.value.text);
         toMade.Wt = double.parse(_qtyController.value.text);
         toMade.rt = double.parse(_rate.value.text);
+        toMade.adv_typ = _selectedAdvType!;
+        toMade.advperc = double.parse(_advPer.value.text);
+        toMade.rate = double.parse(_ratePMT.value.text);
+        toMade.adv = double.parse(_advance.value.text);
         setState(() {
           _isLoading = true;
         });
@@ -169,7 +164,7 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
         showSnakeBar(context, "Maybe you left Broker and Truck as Not Set");
       }
     } catch (e) {
-      showSnakeBar(context, "e");
+      showSnakeBar(context, e.toString());
     }
   }
 
@@ -201,31 +196,13 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
     return file;
   }
 
-  handleUpdateFile(DO oldDo) async {
-    oldDo.grn_no1 = _grnNo1.value.text;
-    oldDo.GRN_NO = int.parse(_grnNo.value.text);
-    oldDo.INV_no = _invNo.value.text;
-    oldDo.EwayNo = _ewayNo.value.text;
-    oldDo.EwayQrcode = _ewayQrCode.value.text;
-    oldDo.Consignor_GST = _consignerGst.value.text;
-    oldDo.drv_name = _drvName.value.text;
-    oldDo.drv_mobile = _drvMobile.value.text;
-    oldDo.inv_date = _inv_date.toIso8601String().split('T')[0];
-    oldDo.valid_till = _valid_till.toIso8601String().split('T')[0];
-    setState(() {
-      _isLoading = true;
-    });
-    Map<String, dynamic> result = await oldDo.updateBySupervisor();
-    if (result['message'] == 'success') {
-      showSnakeBar(context, "D.O Updated successfully");
-      Navigator.of(context).pop();
-    } else {
-      showSnakeBar(context, "Error in Supervisor Update");
-    }
-    setState(() {
-      _isLoading = false;
-    });
+  checkPenalty(String dt) {
+    Duration diff = DateTime.now().difference(dateFormatFromDataBase(dt));
+    int days = diff.inDays;
+    return 1000.0 * days;
   }
+
+// supervisor update
 
   List<Branch> _branchItems = [];
   List<Truck> _truckItems = [];
@@ -261,8 +238,8 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
     try {
       final party = (data['allPartyItems'])
           .firstWhere((element) => element.id == receivedDo.acc_id);
-      final consignee = (data['allPartyItems'])
-          .firstWhere((element) => element.id == receivedDo.consecd);
+      // final consignee = (data['allPartyItems'])
+      //     .firstWhere((element) => element.id == receivedDo.consecd);
       final consecd = (data['allPartyItems'])
           .firstWhere((element) => element.id == receivedDo.consrcd);
 
@@ -293,8 +270,16 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
         fromStationController = TextEditingController(text: receivedDo.frmplc);
         toStationController = TextEditingController(text: receivedDo.toplc);
         productController = TextEditingController(text: receivedDo.itemnm);
-        consigneeController = TextEditingController(text: consignee.showName());
+        // consigneeController = TextEditingController(text: consignee.showName());
         consecdController = TextEditingController(text: consecd.showName());
+
+        _advPer = TextEditingController(text: receivedDo.advperc.toString());
+        _ratePMT = TextEditingController(text: receivedDo.rate.toString());
+
+        _liftingDays =
+            TextEditingController(text: receivedDo.lefdays.toString());
+
+        _selectedAdvType = receivedDo.adv_typ;
 
         _selectedBroker =
             broker != null ? broker : PartyName(name: "NOT SET", id: '-1');
@@ -316,23 +301,6 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
         _advance = TextEditingController(text: receivedDo.adv.toString());
         _diesel = TextEditingController(text: receivedDo.dies.toString());
         _truckWt = TextEditingController(text: receivedDo.truck_wt.toString());
-
-        _grnNo1 = TextEditingController(text: receivedDo.grn_no1);
-        _grnNo = TextEditingController(text: receivedDo.GRN_NO.toString());
-        _invNo = TextEditingController(text: receivedDo.INV_no);
-        _ewayNo = TextEditingController(text: receivedDo.EwayNo);
-        _ewayQrCode = TextEditingController(text: receivedDo.EwayQrcode);
-        _consignerGst = TextEditingController(text: receivedDo.Consignor_GST);
-        _drvName = TextEditingController(text: receivedDo.drv_name);
-        _drvMobile = TextEditingController(text: receivedDo.drv_mobile);
-        //  -----------------------------------
-        // _selectedParty = new PartyName(id: party.id, name: party.name);
-        // _stationFrom = new Station(id: '010', name: receivedDo.frmplc);
-        // _stationTo = new Station(id: '010', name: receivedDo.toplc);
-        // _selectedProduct = new Product(name: receivedDo.itemnm, id: '010');
-        // _selectedConsignee =
-        //     new PartyName(id: consignee.id, name: consignee.name);
-        // _selectedConsecd = new PartyName(id: consecd.id, name: consecd.name);
 
         count = count + 1;
       });
@@ -587,6 +555,14 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
                               SizedBox(
                                 height: 10,
                               ),
+                              // TextFieldHelper(
+                              //   _liftingDays,
+                              //   "Lifting Days",
+                              //   TextInputType.number,
+                              // ),
+                              // SizedBox(
+                              //   height: 10,
+                              // ),
                               additionalAutoComplete(
                                 text:
                                     "From Station Name : ${_stationFrom.name}",
@@ -653,24 +629,24 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
                               SizedBox(
                                 height: 10,
                               ),
-                              additionalAutoComplete(
-                                text: "Consignee : ${_selectedConsignee.name}",
-                                onPressCallback:
-                                    additionalConsigneeOnPressCallback,
-                                name: _selectedConsignee,
-                                autoFocus: false,
-                                label: "Select Consignee Name",
-                                textCallback: partyText,
-                                suggestionCallback: partySuggestion,
-                                stateCallback: consigneeState,
-                                controller: consigneeController,
-                                enable: received['isTrafficMaster']
-                                    ? false
-                                    : _enable,
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
+                              // additionalAutoComplete(
+                              //   text: "Consignee : ${_selectedConsignee.name}",
+                              //   onPressCallback:
+                              //       additionalConsigneeOnPressCallback,
+                              //   name: _selectedConsignee,
+                              //   autoFocus: false,
+                              //   label: "Select Consignee Name",
+                              //   textCallback: partyText,
+                              //   suggestionCallback: partySuggestion,
+                              //   stateCallback: consigneeState,
+                              //   controller: consigneeController,
+                              //   enable: received['isTrafficMaster']
+                              //       ? false
+                              //       : _enable,
+                              // ),
+                              // SizedBox(
+                              //   height: 10,
+                              // ),
                               additionalAutoComplete(
                                 text: "Consigner  : ${_selectedConsecd.name}",
                                 onPressCallback:
@@ -689,14 +665,12 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
                               SizedBox(
                                 height: 10,
                               ),
-                              received['isTrafficMaster'] || received['isAll']
-                                  ? onlyTraffic(received['isDetailTraffic'],
-                                      received['data'])
-                                  : SizedBox(
-                                      width: 0,
-                                    ),
-                              received['isSupervisor']
-                                  ? onlySupervisor(received, context)
+                              received['isTrafficMaster']
+                                  ? onlyTraffic(
+                                      received['isDetailTraffic'],
+                                      received['data'],
+                                      received['isAll'],
+                                    )
                                   : SizedBox(
                                       width: 0,
                                     ),
@@ -709,8 +683,9 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
                                     )
                                   : received['isUpdateButton']
                                       ? ElevatedButton(
-                                          onPressed: () =>
-                                              handleUpdate(received['data']),
+                                          onPressed: () => handleUpdate(
+                                              received['data'],
+                                              byTraff: !received['isAll']),
                                           child: _isLoading
                                               ? Padding(
                                                   padding:
@@ -736,9 +711,6 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
                                                 )
                                               : new Text("Submit"),
                                         ),
-                              SizedBox(
-                                height: 100,
-                              ),
                             ],
                           ),
                         ),
@@ -757,237 +729,12 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
     );
   }
 
-  Column onlySupervisor(Map<String, dynamic> received, BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: 10,
-        ),
-        _isVehLoading
-            ? LinearProgressIndicator()
-            : CheckboxListTile(
-                value: _isVehReached,
-                title: Text("Is Vehicle Reached?"),
-                onChanged: (value) =>
-                    handleVehReachedUpdate(value!, received['data']),
-              ),
-        SizedBox(
-          height: 10,
-        ),
-        TextFieldHelper(
-          _grnNo1,
-          "GRN NO1",
-          TextInputType.visiblePassword,
-        ),
-        SizedBox(
-          height: 10,
-        ),
-        TextFieldHelper(
-          _grnNo,
-          "GRN NO",
-          TextInputType.visiblePassword,
-        ),
-        SizedBox(
-          height: 10,
-        ),
-        TextFieldHelper(
-          _invNo,
-          "INV No",
-          TextInputType.visiblePassword,
-        ),
-        SizedBox(
-          height: 10,
-        ),
-        TextFieldHelper(
-          _ewayNo,
-          "Eway No",
-          TextInputType.visiblePassword,
-        ),
-        SizedBox(
-          height: 10,
-        ),
-        TextFieldHelper(
-          _ewayQrCode,
-          "Eway Qr code",
-          TextInputType.visiblePassword,
-        ),
-        SizedBox(
-          height: 10,
-        ),
-
-        TextFieldHelper(
-          _consignerGst,
-          "Consignor GST",
-          TextInputType.visiblePassword,
-        ),
-        SizedBox(
-          height: 10,
-        ),
-
-        TextFieldHelper(
-          _drvName,
-          "Driver Name",
-          TextInputType.name,
-        ),
-        SizedBox(
-          height: 10,
-        ),
-
-        TextFieldHelper(
-          _drvMobile,
-          "Driver Mobile No.",
-          TextInputType.phone,
-        ),
-        SizedBox(
-          height: 10,
-        ),
-
-        Container(
-          padding: EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(
-              width: 1,
-              color: Colors.grey,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // ignore: unnecessary_null_comparison
-              _inv_date != null
-                  ? FittedBox(
-                      child: Text(
-                        DateFormat.yMMMMd()
-                            .add_jms()
-                            .format(_inv_date)
-                            .toString(),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    )
-                  : Text(
-                      "Select Inv. Date",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 20,
-                      ),
-                    ),
-              ElevatedButton(
-                onPressed: () => _selectDate(context, 'inv_date'),
-                child: Text(
-                  'Select Inv. Date',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(
-          height: 10,
-        ),
-        Container(
-          padding: EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(
-              width: 1,
-              color: Colors.grey,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // ignore: unnecessary_null_comparison
-              _valid_till != null
-                  ? FittedBox(
-                      child: Text(
-                        DateFormat.yMMMMd()
-                            .add_jms()
-                            .format(_valid_till)
-                            .toString(),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    )
-                  : Text(
-                      "Valid Till",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 20,
-                      ),
-                    ),
-              ElevatedButton(
-                onPressed: () => _selectDate(context, 'valid_till'),
-                child: Text(
-                  'Valid Till',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // only when vehicle reached is tick
-        _isVehReached
-            ? Column(
-                children: [
-                  CaptureImage(),
-                  ElevatedButton(
-                    onPressed: () => handleUpdateFile(received['data']),
-                    child: _isLoading
-                        ? Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          )
-                        // update by supervisor
-                        : Text("Update"),
-                  ),
-                ],
-              )
-            : SizedBox(
-                height: 0,
-              ),
-      ],
-    );
-  }
-
   detailTraffic() {
     return Column(
       children: [
         TextFieldHelper(
           _truckWt,
-          "Truck Weight",
-          TextInputType.number,
-          enable: _enable,
-          noValidate: true,
-        ),
-        SizedBox(
-          height: 10,
-        ),
-        TextFieldHelper(
-          _rate,
-          "Rate",
-          TextInputType.number,
-          enable: _enable,
-          noValidate: true,
-        ),
-        SizedBox(
-          height: 10,
-        ),
-        TextFieldHelper(
-          _advance,
-          "Advance",
+          "Tare Weight",
           TextInputType.number,
           enable: _enable,
           noValidate: true,
@@ -1009,21 +756,87 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
     );
   }
 
-  onlyTraffic(bool received, DO? data) {
+  TextEditingController _advPer = TextEditingController(text: "");
+  TextEditingController _ratePMT = TextEditingController(text: "");
+  TextEditingController _manualAdv = TextEditingController(text: "0");
+
+  int? _selectedAdvType = 3;
+
+  void setAdvType(val) {
+    setState(() {
+      _selectedAdvType = val;
+    });
+  }
+
+  onlyTraffic(bool received, DO? data, bool all) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextButton.icon(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => SplitTruck(receivedDo: data)),
-            );
+        FocusScope(
+          onFocusChange: (value) {
+            if (!value) {
+              setState(() {});
+            }
           },
-          icon: Icon(Icons.splitscreen),
-          label: Text("Split This DO"),
+          child: TextFieldHelper(
+            _advPer,
+            "Advance %",
+            TextInputType.numberWithOptions(signed: false),
+          ),
         ),
+        SizedBox(
+          height: 10,
+        ),
+        TextFieldHelper(
+          _ratePMT,
+          "Rate Per MT",
+          TextInputType.numberWithOptions(signed: false),
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        (_advPer.value.text == '0' || _advPer.value.text == '0.0' || all)
+            ? TextFieldHelper(
+                _advance,
+                "Advance",
+                TextInputType.numberWithOptions(signed: false),
+              )
+            : SizedBox(
+                height: 0,
+              ),
+        !all
+            ? ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SplitTruck(
+                              receivedDo: data,
+                              advPer: _advPer.value.text == ''
+                                  ? '0'
+                                  : _advPer.value.text,
+                              manualAdv: _manualAdv.value.text,
+                              ratePMT: _ratePMT.value.text,
+                            )),
+                  );
+                },
+                icon: Icon(Icons.splitscreen),
+                label: Text("Split This DO"),
+              )
+            : SizedBox(
+                height: 0,
+              ),
+        SizedBox(
+          height: 10,
+        ),
+        AdvTypeList(
+          selectIndex: _selectedAdvType,
+          fun: !all ? setAdvType : () {},
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        detailTraffic(),
         SizedBox(
           height: 10,
         ),
@@ -1054,14 +867,6 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
           controller: brokerController,
           enable: _enable,
         ),
-        SizedBox(
-          height: 10,
-        ),
-        received
-            ? detailTraffic()
-            : SizedBox(
-                height: 0,
-              ),
       ],
     );
   }
@@ -1069,12 +874,14 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   _selectDate(BuildContext context, value) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(), // Refer step 1
-      firstDate: DateTime(2000),
-      lastDate: DateTime(3025),
-    );
+    final DateTime? picked = await DatePicker.showDateTimePicker(context,
+        showTitleActions: true,
+        minTime: DateTime(2018, 3, 5),
+        maxTime: DateTime(2019, 6, 7), onChanged: (date) {
+      print('change $date');
+    }, onConfirm: (date) {
+      print('confirm $date');
+    }, currentTime: DateTime.now(), locale: LocaleType.en);
 
     switch (value) {
       case 'do_dt':
@@ -1209,11 +1016,19 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
 
   brokerPartyState(suggestion) {
     toMade.broker = (suggestion as PartyName).id;
+    setState(() {
+      _selectedBroker = suggestion;
+    });
   }
 
   additionalBrokerPartyOnPressCallback() {
     brokerController = TextEditingController(text: "");
     toMade.broker = "-1";
+    brokerController = TextEditingController(text: "");
+    toMade.broker = "-1";
+    setState(() {
+      _selectedBroker = new PartyName(id: '-1', name: '-1');
+    });
   }
 
   // ------------------------------------------------------------
@@ -1332,6 +1147,8 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
       setState(() {
         toMade.broker = selectedBroker.id;
         brokerController = TextEditingController(text: selectedBroker.name);
+        _selectedBroker = selectedBroker;
+        _selectedTruck = suggestion;
       });
     } catch (e) {
       showSnakeBar(context, "No Broker Found For This Truck Number");
@@ -1340,7 +1157,13 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
 
   additionalTruckOnPressCallback() {
     truckController = TextEditingController(text: "");
+    brokerController = TextEditingController(text: "");
     toMade.truckid = "-1";
+    toMade.broker = "-1";
+    setState(() {
+      _selectedBroker = new PartyName(id: '-1', name: '-1');
+      _selectedTruck = new Truck(panNo: '-1', truckNo: '-1', uid: '-1');
+    });
   }
 
   // ------------------------------------------------------------
@@ -1384,4 +1207,65 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
 
   // ------------------------------------------------------------
 
+}
+
+class AdvType {
+  int? value;
+  String? name;
+
+  AdvType({this.value, this.name});
+}
+
+List<AdvType> advTypeList = [
+  AdvType(name: "None", value: 0),
+  AdvType(name: "Cash", value: 1),
+  AdvType(name: "Cheque", value: 2),
+  AdvType(name: "RTGS", value: 3),
+];
+
+class AdvTypeList extends StatelessWidget {
+  final int? selectIndex;
+  final Function? fun;
+  const AdvTypeList({
+    Key? key,
+    this.fun,
+    this.selectIndex,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        border: Border.all(
+          width: 0,
+          color: Colors.black,
+        ),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text("Advance Type"),
+          DropdownButtonHideUnderline(
+              child: DropdownButton(
+            value: selectIndex!,
+            items: advTypeList.map((AdvType item) {
+              return DropdownMenuItem<int>(
+                // onTap: () => fun!(item.value),
+                child: Text(
+                  item.name!,
+                  style: TextStyle(
+                    color: Colors.black,
+                  ),
+                ),
+                value: item.value,
+              );
+            }).toList(),
+            onChanged: (value) => fun!(value),
+          )),
+        ],
+      ),
+    );
+  }
 }

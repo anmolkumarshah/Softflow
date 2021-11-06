@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:softflow_app/Helpers/dateFormatfromDataBase.dart';
 import 'package:softflow_app/Models/do_model.dart';
 import 'package:softflow_app/Models/truck_model.dart';
 
@@ -96,22 +98,65 @@ class _TileWidgetState extends State<TileWidget> {
                 )
               ],
             ),
-            subtitle: Row(
+            subtitle: Column(
               children: [
-                Icon(Icons.local_shipping, color: Colors.white),
-                SizedBox(
-                  width: 5,
+                Row(
+                  children: [
+                    Icon(Icons.document_scanner, color: Colors.white),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Text(
+                      widget.receivedDo.do_no,
+                      style: TextStyle(color: Colors.white),
+                      softWrap: true,
+                    ),
+                    SizedBox(
+                      width: 20,
+                    ),
+                    Chip(
+                      label: Text(
+                        "qty  " + widget.receivedDo.Wt.toString(),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    )
+                  ],
                 ),
-                Text(
-                  widget.receivedDo.frmplc,
-                  style: TextStyle(color: Colors.white),
-                  softWrap: true,
+                Row(
+                  children: [
+                    Icon(Icons.local_shipping, color: Colors.white),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Text(
+                      widget.receivedDo.frmplc,
+                      style: TextStyle(color: Colors.white),
+                      softWrap: true,
+                    ),
+                    Icon(Icons.arrow_right_alt, color: Colors.white),
+                    Text(
+                      widget.receivedDo.toplc,
+                      style: TextStyle(color: Colors.white),
+                      softWrap: true,
+                    ),
+                  ],
                 ),
-                Icon(Icons.arrow_right_alt, color: Colors.white),
-                Text(
-                  widget.receivedDo.toplc,
-                  style: TextStyle(color: Colors.white),
-                  softWrap: true,
+                Row(
+                  children: [
+                    Icon(Icons.date_range_outlined, color: Colors.white),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Text(
+                      DateFormat.yMMMMEEEEd().format(
+                          dateFormatFromDataBase(widget.receivedDo.do_dt)),
+                      style: TextStyle(color: Colors.white),
+                      softWrap: true,
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -11,7 +11,8 @@ import 'package:softflow_app/Providers/main_provider.dart';
 import 'package:data_table_2/data_table_2.dart';
 
 class TabularDataScreen extends StatefulWidget {
-  const TabularDataScreen({Key? key}) : super(key: key);
+  List<DO>? filterDo;
+  TabularDataScreen({Key? key, this.filterDo}) : super(key: key);
   static const routeName = "/tabular-data";
 
   @override
@@ -23,7 +24,7 @@ class _TabularDataScreenState extends State<TabularDataScreen> {
   List<Truck> _truckItems = [];
   List<PartyName> _brokerItems = [];
   List<PartyName> _allPartyItems = [];
-  List<DO> _allDo = [];
+  // List<DO> _allDo = widget.filterDo!;
 
   Future<Map<String, List<dynamic>>> getSet() async {
     final considerUser = Provider.of<MainProvider>(context, listen: false).user;
@@ -35,20 +36,18 @@ class _TabularDataScreenState extends State<TabularDataScreen> {
         balCd2: 'L5');
 
     final truckList = await Truck.getTrucks(considerUser.co, '');
-    final doList = await DO.getAllDO('', branch: considerUser.deptCd);
+    // final doList = await DO.getAllDO('', branch: considerUser.deptCd);
 
     _branchItems = branchResult['data'];
     _brokerItems = brokerList['data'];
     _truckItems = truckList['data'];
     _allPartyItems = partyList['data'];
-    _allDo = doList['data'];
 
     return {
       'branchItems': _branchItems,
       'brokerItems': _brokerItems,
       'truckItems': _truckItems,
       'allPartyItems': _allPartyItems,
-      'allDoItems': _allDo,
     };
   }
 
@@ -64,7 +63,6 @@ class _TabularDataScreenState extends State<TabularDataScreen> {
       "DO No.",
       "Product",
       "Qty",
-      "Consignee",
       "Consigner",
       "Broker",
       "Truck"
@@ -82,8 +80,10 @@ class _TabularDataScreenState extends State<TabularDataScreen> {
               }
               if (snapshot.hasData) {
                 final data = snapshot.data as Map<String, dynamic>;
-                List<DO> list = data['allDoItems'];
+                List<DO> list = widget.filterDo!;
                 return DataTable2(
+                  smRatio: 5,
+                  lmRatio: 5,
                   columnSpacing: 12,
                   horizontalMargin: 12,
                   minWidth: 1500,
@@ -125,11 +125,11 @@ class _TabularDataScreenState extends State<TabularDataScreen> {
                             DataCell(Text(e.do_no)),
                             DataCell(Text(e.itemnm)),
                             DataCell(Text(e.Wt.toString())),
-                            DataCell(
-                              Text(_allPartyItems
-                                  .firstWhere((i) => i.id == e.consecd)
-                                  .name),
-                            ),
+                            // DataCell(
+                            //   Text(_allPartyItems
+                            //       .firstWhere((i) => i.id == e.consecd)
+                            //       .name),
+                            // ),
                             DataCell(
                               Text(_allPartyItems
                                   .firstWhere((i) => i.id == e.consrcd)

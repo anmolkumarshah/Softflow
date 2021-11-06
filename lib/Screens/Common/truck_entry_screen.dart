@@ -58,55 +58,55 @@ class _TruckEntryScreenState extends State<TruckEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currUser = Provider.of<MainProvider>(context, listen: false).mainUser;
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Truck Entry"),
-      ),
-      body: _isWholeLoading
-          ? LoadingListPage()
-          : Column(
-              children: [
-                Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextFormField(
-                    onChanged: (value) => handleSearch(value),
-                    initialValue: "",
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Search Truck',
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: () => getAndSet(),
-                    child: ListView.builder(
-                      itemCount: toShowItems.length,
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        return TruckTile(
-                          truck: toShowItems[index],
-                          getAndSet: getAndSet,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.of(context).pushNamed(
-            TruckInputScreen.routeName,
-            arguments: {'data': "", 'enable': true},
-          );
-          getAndSet();
-        },
-        child: Icon(
-          Icons.add,
+        appBar: AppBar(
+          title: Text("Truck Entry"),
         ),
-      ),
-    );
+        body: _isWholeLoading
+            ? LoadingListPage()
+            : Column(
+                children: [
+                  Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextFormField(
+                      onChanged: (value) => handleSearch(value),
+                      initialValue: "",
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Search Truck',
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () => getAndSet(),
+                      child: ListView.builder(
+                        itemCount: toShowItems.length,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) {
+                          return TruckTile(
+                            truck: toShowItems[index],
+                            getAndSet: getAndSet,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            await Navigator.of(context).pushNamed(
+              TruckInputScreen.routeName,
+              arguments: {'data': "", 'enable': true},
+            );
+            getAndSet();
+          },
+          child: Icon(
+            Icons.add,
+          ),
+        ));
   }
 }

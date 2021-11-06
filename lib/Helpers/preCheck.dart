@@ -9,7 +9,7 @@ Future<Map<String, dynamic>> check(String query) async {
     p2: query,
   );
   final url = urlObject.getUrl();
-  print(url);
+  // print(url);
   try {
     final result = await getMethod(url);
     final data = json.decode(result.body);

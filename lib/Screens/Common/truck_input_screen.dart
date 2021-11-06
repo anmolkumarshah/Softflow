@@ -75,6 +75,43 @@ class _TruckInputScreenState extends State<TruckInputScreen> {
     }
   }
 
+  handleUpdate(Truck received) async {
+    setState(() {
+      _isSaving = true;
+    });
+    _formKey.currentState!.save();
+    final currentUser =
+        Provider.of<MainProvider>(context, listen: false).mainUser;
+    if (_formKey.currentState!.validate()) {
+      received.panNo = _panNo.value.text.trim();
+      received.truckNo = _truckNo.value.text.trim();
+      received.truck_no1 = _truckNo1.value.text.trim();
+      received.place = _place.value.text.trim();
+      received.driver_nm = _driver_nm.value.text.trim();
+      received.driver_mobile = _driver_mob.value.text.trim();
+      received.addr = _addr.value.text.trim();
+      received.owner = _selectedBroker.name.trim();
+
+      final result = await received.update(currentUser.co);
+      if (result['message'] == 'success') {
+        showSnakeBar(context, result['message']);
+        setState(() {
+          _isSaving = false;
+        });
+        Navigator.of(context).pop();
+      } else {
+        showSnakeBar(context, result['message']);
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    } else {
+      setState(() {
+        _isSaving = false;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -212,13 +249,14 @@ class _TruckInputScreenState extends State<TruckInputScreen> {
                         ? Center(
                             child: CircularProgressIndicator(),
                           )
-                        : enable
+                        : enable && received['data'] == ""
                             ? ElevatedButton(
                                 child: Text("Save Truck"),
                                 onPressed: handleSave,
                               )
-                            : SizedBox(
-                                height: 0,
+                            : ElevatedButton(
+                                child: Text("Update Truck"),
+                                onPressed: () => handleUpdate(received['data']),
                               ),
                   ],
                 ),

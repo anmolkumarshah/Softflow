@@ -27,9 +27,10 @@ class _TruckToReachScreenState extends State<TruckToReachScreen> {
         
         select * from domast where acc_id in (${currentUser.acc_id}, 
             ${currentUser.acc_id1}, ${currentUser.acc_id2}) and Veh_reached
-             = 'false' and broker != -1 and truckid != -1 and br_cd = ${currentUser.deptCd}
-                
+             = 'false' and broker != -1 and truckid != -1 
+            order by do_dt desc   
         """),
+          // and br_cd = ${currentUser.deptCd}
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return LoadingListPage();

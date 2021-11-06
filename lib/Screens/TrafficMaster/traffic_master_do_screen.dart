@@ -24,7 +24,9 @@ class TrafficMasterDoScreen extends StatelessWidget {
           textFieldConfiguration: TextFieldConfiguration(
             autofocus: true,
             decoration: InputDecoration(
-                border: OutlineInputBorder(), labelText: "Search by DO number"),
+              border: OutlineInputBorder(),
+              labelText: "Search by DO number",
+            ),
           ),
           suggestionsCallback: (pattern) async {
             final result = await DO.getAllUnAllotedDo('', currentUser.deptCd);
@@ -40,7 +42,8 @@ class TrafficMasterDoScreen extends StatelessWidget {
             return DoItem(
               receivedDO: data,
               getAndSet: () {},
-              forTrafficDetailsColumns: false,
+              forTrafficDetailsColumns: true,
+              isAll: false,
             );
           },
           onSuggestionSelected: (suggestion) {
@@ -51,6 +54,8 @@ class TrafficMasterDoScreen extends StatelessWidget {
               },
             );
           },
+          hideKeyboard: false,
+          hideOnLoading: false,
         ),
       ),
     );

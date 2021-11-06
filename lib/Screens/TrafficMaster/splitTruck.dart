@@ -9,7 +9,6 @@ import 'package:softflow_app/Models/partyName_model.dart';
 import 'package:softflow_app/Models/truck_model.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
-import 'package:softflow_app/Screens/TrafficMaster/traffic_master_do_screen.dart';
 
 // ignore: must_be_immutable
 class SplitTruck extends StatefulWidget {
@@ -18,7 +17,17 @@ class SplitTruck extends StatefulWidget {
   double? splitableWt;
   List<Split> list = [];
   bool? loading = false;
-  SplitTruck({Key? key, this.receivedDo}) {
+
+  String? advPer;
+  String? ratePMT;
+  String? manualAdv;
+  SplitTruck({
+    Key? key,
+    this.receivedDo,
+    this.advPer,
+    this.ratePMT,
+    this.manualAdv,
+  }) {
     this.receivedDo = receivedDo;
     this.actualWt = receivedDo!.Wt;
     this.splitableWt = this.actualWt;
@@ -36,6 +45,11 @@ class _SplitTruckState extends State<SplitTruck> {
     void changeSplitWt(double wt) {
       if (wt > widget.splitableWt!)
         throw "Split Quantity Cannot Be More Than ${widget.splitableWt.toString()}";
+
+      if (widget.splitableWt! - wt <= 0) {
+        throw "Original DO Cannor Have ZERO Value";
+      }
+
       widget.splitableWt = (widget.splitableWt! - wt);
       setState(() {});
     }
@@ -46,19 +60,18 @@ class _SplitTruckState extends State<SplitTruck> {
     }
 
     Future assignUId(List<DO> splitedDO) async {
-      print("assign - start");
       for (DO item in splitedDO) {
+        item.rate = double.parse(widget.ratePMT!);
+        item.adv = double.parse(widget.manualAdv!);
+        item.advperc = double.parse(widget.advPer!);
         await item.getSetUid();
       }
-      print("assign - end");
     }
 
     Future saveSplit(List<DO> splitedDO) async {
-      print("save - start");
       for (DO item in splitedDO) {
         await item.save();
       }
-      print("save - end");
     }
 
     handleSplitAdd() async {
@@ -74,6 +87,9 @@ class _SplitTruckState extends State<SplitTruck> {
           partDO.Wt = e.qty!;
           partDO.truckid = e.truck!.uid;
           partDO.broker = e.broker!.id;
+          partDO.advperc = double.parse(widget.manualAdv!);
+          partDO.adv = double.parse(widget.manualAdv!);
+          partDO.rate = double.parse(widget.ratePMT!);
           return partDO;
         }).toList();
         await assignUId(splitedDO);
@@ -81,7 +97,8 @@ class _SplitTruckState extends State<SplitTruck> {
         await widget.receivedDo!.update(q: '''
           update domast
           set
-          Wt = ${widget.splitableWt!}
+          Wt = ${widget.splitableWt!}, advperc = ${widget.advPer},
+          rate = ${widget.ratePMT}, adv = ${widget.manualAdv}
           where uid = '${widget.receivedDo!.uid}'
         ''');
         showSnakeBar(context, "DO Splited Successfully");
@@ -211,7 +228,6 @@ class _OpenModelState extends State<OpenModel> {
   }
 
   truckSuggestion(pattern) async {
-    print("One");
     List<Truck> updatedResult = _truckItems
         .where((element) =>
             element.truckNo
@@ -238,7 +254,6 @@ class _OpenModelState extends State<OpenModel> {
   }
 
   truckState(suggestion) {
-    print(suggestion);
     PartyName selectedBroker = new PartyName(name: '-1', id: '-1');
     try {
       selectedBroker = _brokerItems.firstWhere((element) =>
@@ -261,7 +276,6 @@ class _OpenModelState extends State<OpenModel> {
   }
 
   Future getSet() async {
-    print("getSet");
     final partyList = await PartyName.getPartyName(
         widget.considerUser!.co, widget.considerUser!.yr, "", 'A5',
         balCd2: 'L5');
@@ -289,9 +303,7 @@ class _OpenModelState extends State<OpenModel> {
   handleAdd() {
     try {
       final double qty = double.parse(_splitQty.value.text);
-      if (_selectedBroker!.id != '-1' &&
-          _selectedTruck!.uid != '-1' &&
-          qty != 0) {
+      if (qty != 0) {
         Split sp =
             new Split(broker: _selectedBroker, truck: _selectedTruck, qty: qty);
         widget.handleSplit!(qty);
@@ -300,7 +312,7 @@ class _OpenModelState extends State<OpenModel> {
         additionalTruckOnPressCallback();
         additionalBrokerPartyOnPressCallback();
       } else {
-        showSnakeBar(context, "Select Truck First");
+        showSnakeBar(context, "Quantity Cannot be 0");
       }
     } catch (e) {
       showSnakeBar(context, e.toString());

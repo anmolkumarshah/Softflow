@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:softflow_app/Helpers/Snakebar.dart';
 import 'package:softflow_app/Helpers/dateFormatfromDataBase.dart';
 import 'package:softflow_app/Helpers/filterTypeHelper.dart';
+import 'package:softflow_app/Helpers/partyWiseModel.dart';
 import 'package:softflow_app/Helpers/shimmerLoader.dart';
 import 'package:softflow_app/Models/user_model.dart';
 import 'package:softflow_app/Providers/main_provider.dart';
@@ -19,16 +20,38 @@ class AllDoScreen extends StatefulWidget {
 }
 
 class _AllDoScreenState extends State<AllDoScreen> {
-  List<DO> items = [];
   int _selectedFilter = 1;
 
   List<int> filterItems = [0, 1, 2, 3, 4];
 
+  List<DO> items = [];
+  List<DO> partyWiseItems = [];
   List<DO> toShowItems = [];
+
+  List<PartyWise>? li = [];
+  PartyWise? selectedPartyWise;
+  List<DropdownMenuItem<PartyWise>>? pwli;
 
   bool _isLoading = false;
 
   DateTime selectedDate = DateTime.now();
+
+  partyFilter() {
+    PartyWise? pw = selectedPartyWise;
+    if (pw!.accId == -1) {
+      setState(() {
+        partyWiseItems = items;
+      });
+      filterSearch();
+      return;
+    }
+    List<DO> temp =
+        items.where((e) => e.acc_id == pw.accId.toString()).toList();
+    setState(() {
+      partyWiseItems = temp;
+    });
+    filterSearch();
+  }
 
   getAndSet() async {
     final User currentUser =
@@ -36,11 +59,18 @@ class _AllDoScreenState extends State<AllDoScreen> {
     setState(() {
       _isLoading = true;
     });
-    final result = await DO.getAllDO('', branch: currentUser.deptCd);
+    li = await PartyWise.fetch();
+    li!.insert(0, PartyWise(accId: -1, name: "All Party Data"));
+    selectedPartyWise = li![0];
+    pwli = PartyWise.fetchItems(li!);
+    final result = await DO.getAllDO(
+      '',
+      branch: currentUser.deptCd,
+    );
     if (result['message'] == 'success') {
       setState(() {
         items = result['data'];
-        toShowItems = items;
+        partyWiseItems = items;
         _isLoading = false;
       });
     } else {
@@ -53,7 +83,7 @@ class _AllDoScreenState extends State<AllDoScreen> {
   }
 
   handleSearch(String value) {
-    List<DO> temp = items
+    List<DO> temp = partyWiseItems
         .where((element) =>
             (element.do_no.toLowerCase().contains(value.toLowerCase()) ||
                 element.consignee.toLowerCase().contains(value.toLowerCase()) ||
@@ -67,7 +97,7 @@ class _AllDoScreenState extends State<AllDoScreen> {
     setState(() {
       toShowItems = temp;
     });
-    filterSearch();
+    partyFilter();
   }
 
   filterSearch() {
@@ -78,13 +108,13 @@ class _AllDoScreenState extends State<AllDoScreen> {
         });
         break;
       case 1:
-        List<DO> temp = toShowItems.where((e) => e.truckid == '-1').toList();
+        List<DO> temp = partyWiseItems.where((e) => e.truckid == '-1').toList();
         setState(() {
           toShowItems = temp;
         });
         break;
       case 2:
-        List<DO> temp = toShowItems
+        List<DO> temp = partyWiseItems
             .where((e) =>
                 e.truckid != '-1' &&
                 e.broker != '-1' &&
@@ -96,7 +126,7 @@ class _AllDoScreenState extends State<AllDoScreen> {
         });
         break;
       case 3:
-        List<DO> temp = toShowItems
+        List<DO> temp = partyWiseItems
             .where((e) => e.Veh_reached == '1' && e.compl != 1)
             .toList();
         setState(() {
@@ -104,7 +134,7 @@ class _AllDoScreenState extends State<AllDoScreen> {
         });
         break;
       case 4:
-        List<DO> temp = toShowItems.where((e) => e.compl == 1).toList();
+        List<DO> temp = partyWiseItems.where((e) => e.compl == 1).toList();
         setState(() {
           toShowItems = temp;
         });
@@ -116,7 +146,7 @@ class _AllDoScreenState extends State<AllDoScreen> {
   dynamic _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate, // Refer step 1
+      initialDate: selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
     );
@@ -183,32 +213,48 @@ class _AllDoScreenState extends State<AllDoScreen> {
                     initialValue: "",
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
-                      labelText: 'Search User',
+                      labelText: 'Search DO',
                     ),
                   ),
                 ),
                 Container(
                   color: Colors.white,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  child: Column(
                     children: [
-                      GestureDetector(
-                        onTap: () => _selectDate(context),
-                        child: Chip(
-                          label: Text(
-                            "Results for Date " +
-                                DateFormat.yMMMd()
-                                    .format(selectedDate)
-                                    .toString(),
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                      DropdownButtonHideUnderline(
+                        child: DropdownButton<PartyWise>(
+                          items: pwli,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedPartyWise = value;
+                            });
+                            partyFilter();
+                          },
+                          value: selectedPartyWise,
                         ),
                       ),
-                      Chip(
-                        label: Text(
-                          "Results : ${toShowItems.length}",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          GestureDetector(
+                            onTap: () => _selectDate(context),
+                            child: Chip(
+                              label: Text(
+                                "Results for Date " +
+                                    DateFormat.yMMMd()
+                                        .format(selectedDate)
+                                        .toString(),
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                          Chip(
+                            label: Text(
+                              "Results : ${toShowItems.length}",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -232,7 +278,13 @@ class _AllDoScreenState extends State<AllDoScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.of(context).pushNamed(TabularDataScreen.routeName);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TabularDataScreen(
+                  filterDo: toShowItems,
+                ),
+              ));
         },
         label: Row(
           children: [

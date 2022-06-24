@@ -95,7 +95,7 @@ class _DoEntryScreenState extends State<DoEntryScreen> {
       toMade.br_cd = considerUser.deptCd == '0' || considerUser.deptCd == '1'
           ? _selectedBranch
           : considerUser.deptCd;
-      // is user is traffic master
+      // if user is traffic master
       if (received['isAll']) {
         toMade.truckid = _selectedTruck.uid;
         toMade.broker = _selectedBroker.id;

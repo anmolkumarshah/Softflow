@@ -55,17 +55,20 @@ class _TabularDataScreenState extends State<TabularDataScreen> {
   Widget build(BuildContext context) {
     List<String> col_names = [
       'SR.NO',
-      "Date",
-      'Branch',
-      'Party Name',
+      "Date & Time",
       'From Station',
       "To Station",
-      "DO No.",
-      "Product",
       "Qty",
-      "Consigner",
+      "Product",
+      "Truck",
       "Broker",
-      "Truck"
+      "Weight",
+      "Rate",
+      'Branch',
+      'Party Name',
+      "DO No.",
+      "Consignee",
+      "Consigner",
     ];
     return Scaffold(
       appBar: AppBar(
@@ -103,44 +106,23 @@ class _TabularDataScreenState extends State<TabularDataScreen> {
                       .map(
                         (e) => DataRow(
                           cells: <DataCell>[
+                            // sr
                             DataCell(
                               Text((list.indexOf(e) + 1).toString()),
                             ),
+                            // date and time
                             DataCell(Text(DateFormat.yMMMMd()
                                 .add_jm()
                                 .format(dateFormatFromDataBase(e.do_dt))
                                 .toString())),
-                            DataCell(
-                              Text(_branchItems
-                                  .firstWhere((i) => i.id == e.br_cd)
-                                  .name),
-                            ),
-                            DataCell(
-                              Text(_allPartyItems
-                                  .firstWhere((i) => i.id == e.acc_id)
-                                  .name),
-                            ),
+                            // from and to place
                             DataCell(Text(e.frmplc)),
                             DataCell(Text(e.toplc)),
-                            DataCell(Text(e.do_no)),
-                            DataCell(Text(e.itemnm)),
+                            // qty
                             DataCell(Text(e.Wt.toString())),
-                            // DataCell(
-                            //   Text(_allPartyItems
-                            //       .firstWhere((i) => i.id == e.consecd)
-                            //       .name),
-                            // ),
-                            DataCell(
-                              Text(_allPartyItems
-                                  .firstWhere((i) => i.id == e.consrcd)
-                                  .name),
-                            ),
-                            DataCell(
-                              Text(_brokerItems.firstWhere(
-                                  (i) => i.id == e.broker, orElse: () {
-                                return PartyName(name: "Not Set");
-                              }).name),
-                            ),
+                            // product
+                            DataCell(Text(e.itemnm)),
+                            // truck
                             DataCell(
                               Text(
                                 _truckItems.firstWhere(
@@ -152,6 +134,42 @@ class _TabularDataScreenState extends State<TabularDataScreen> {
                                   );
                                 }).truckNo,
                               ),
+                            ),
+                            // broker
+                            DataCell(
+                              Text(_brokerItems.firstWhere(
+                                  (i) => i.id == e.broker, orElse: () {
+                                return PartyName(name: "Not Set");
+                              }).name),
+                            ),
+                            // Weight
+                            DataCell(Text(e.actwt.toString())),
+                            // Rate
+                            DataCell(Text(e.rate.toString())),
+                            // branch
+                            DataCell(
+                              Text(_branchItems
+                                  .firstWhere((i) => i.id == e.br_cd)
+                                  .name),
+                            ),
+                            // paryty name
+                            DataCell(
+                              Text(_allPartyItems
+                                  .firstWhere((i) => i.id == e.acc_id)
+                                  .name),
+                            ),
+                            DataCell(Text(e.do_no)),
+                            // consignee
+                            DataCell(
+                              Text(_allPartyItems
+                                  .firstWhere((i) => i.id == e.acc_id)
+                                  .name),
+                            ),
+                            // consigner
+                            DataCell(
+                              Text(_allPartyItems
+                                  .firstWhere((i) => i.id == e.consrcd)
+                                  .name),
                             ),
                           ],
                         ),

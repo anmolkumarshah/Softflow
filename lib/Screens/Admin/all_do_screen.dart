@@ -36,23 +36,6 @@ class _AllDoScreenState extends State<AllDoScreen> {
 
   DateTime selectedDate = DateTime.now();
 
-  partyFilter() {
-    PartyWise? pw = selectedPartyWise;
-    if (pw!.accId == -1) {
-      setState(() {
-        partyWiseItems = items;
-      });
-      filterSearch();
-      return;
-    }
-    List<DO> temp =
-        items.where((e) => e.acc_id == pw.accId.toString()).toList();
-    setState(() {
-      partyWiseItems = temp;
-    });
-    filterSearch();
-  }
-
   getAndSet() async {
     final User currentUser =
         Provider.of<MainProvider>(context, listen: false).user;
@@ -70,7 +53,7 @@ class _AllDoScreenState extends State<AllDoScreen> {
     if (result['message'] == 'success') {
       setState(() {
         items = result['data'];
-        partyWiseItems = items;
+        partyWiseItems = result['data'];
         _isLoading = false;
       });
     } else {
@@ -79,32 +62,32 @@ class _AllDoScreenState extends State<AllDoScreen> {
         _isLoading = false;
       });
     }
-    handleSearch("");
-  }
-
-  handleSearch(String value) {
-    List<DO> temp = partyWiseItems
-        .where((element) =>
-            (element.do_no.toLowerCase().contains(value.toLowerCase()) ||
-                element.consignee.toLowerCase().contains(value.toLowerCase()) ||
-                element.toplc.toLowerCase().contains(value.toLowerCase()) ||
-                element.frmplc.toLowerCase().contains(value.toLowerCase())) &&
-            (dateFormatFromDataBase(element.do_dt)
-                    .isAfter(selectedDate.subtract(Duration(days: 4))) &&
-                dateFormatFromDataBase(element.do_dt)
-                    .isBefore(selectedDate.add(Duration(days: 1)))))
-        .toList();
-    setState(() {
-      toShowItems = temp;
-    });
     partyFilter();
   }
 
+  partyFilter() {
+    PartyWise? pw = selectedPartyWise;
+    if (pw!.accId == -1) {
+      setState(() {
+        partyWiseItems = items;
+      });
+      filterSearch();
+      return;
+    }
+    List<DO> temp =
+        items.where((e) => e.acc_id == pw.accId.toString()).toList();
+    setState(() {
+      partyWiseItems = temp;
+    });
+    filterSearch();
+  }
+
   filterSearch() {
+    setState(() {});
     switch (_selectedFilter) {
       case 0:
         setState(() {
-          toShowItems = toShowItems;
+          toShowItems = partyWiseItems;
         });
         break;
       case 1:
@@ -141,6 +124,25 @@ class _AllDoScreenState extends State<AllDoScreen> {
         break;
       default:
     }
+    handleSearch("");
+  }
+
+  handleSearch(String value) {
+    List<DO> temp = toShowItems
+        .where((element) =>
+            (element.do_no.toLowerCase().contains(value.toLowerCase()) ||
+                element.consignee.toLowerCase().contains(value.toLowerCase()) ||
+                element.toplc.toLowerCase().contains(value.toLowerCase()) ||
+                element.frmplc.toLowerCase().contains(value.toLowerCase())) &&
+            (dateFormatFromDataBase(element.do_dt)
+                    .isAfter(selectedDate.subtract(Duration(days: 4))) &&
+                dateFormatFromDataBase(element.do_dt)
+                    .isBefore(selectedDate.add(Duration(days: 1)))))
+        .toList();
+    setState(() {
+      toShowItems = temp;
+    });
+    // partyFilter();
   }
 
   dynamic _selectDate(BuildContext context) async {
@@ -176,7 +178,7 @@ class _AllDoScreenState extends State<AllDoScreen> {
                 value: _selectedFilter,
                 items: filterItems.map((int item) {
                   return DropdownMenuItem<int>(
-                    onTap: () => handleSearch(''),
+                    onTap: () => filterSearch(),
                     child: Text(
                       filterType(item),
                       style: TextStyle(

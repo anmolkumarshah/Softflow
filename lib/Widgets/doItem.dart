@@ -164,39 +164,39 @@ class DoItem extends StatelessWidget {
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // FutureBuilder(
-              //   future: PartyName.getNameOfPartyById(this.receivedDO.consecd),
-              //   builder: (context, snapshot) {
-              //     if (snapshot.connectionState == ConnectionState.waiting) {
-              //       return Column(
-              //         children: [
-              //           SizedBox(
-              //             height: 5,
-              //           ),
-              //           LinearProgressIndicator(
-              //             minHeight: 3,
-              //           ),
-              //         ],
-              //       );
-              //     } else if (snapshot.connectionState == ConnectionState.done) {
-              //       if (snapshot.hasData) {
-              //         return Row(
-              //           children: <Widget>[
-              //             Icon(Icons.person, color: Colors.white),
-              //             SizedBox(
-              //               width: 5,
-              //             ),
-              //             Expanded(
-              //               child: Text(snapshot.data.toString(),
-              //                   style: TextStyle(color: Colors.white)),
-              //             )
-              //           ],
-              //         );
-              //       }
-              //     }
-              //     return Text("Error");
-              //   },
-              // ),
+              FutureBuilder(
+                future: PartyName.getNameOfPartyById(this.receivedDO.acc_id),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Column(
+                      children: [
+                        SizedBox(
+                          height: 5,
+                        ),
+                        LinearProgressIndicator(
+                          minHeight: 3,
+                        ),
+                      ],
+                    );
+                  } else if (snapshot.connectionState == ConnectionState.done) {
+                    if (snapshot.hasData) {
+                      return Row(
+                        children: <Widget>[
+                          Icon(Icons.person, color: Colors.white),
+                          SizedBox(
+                            width: 5,
+                          ),
+                          Expanded(
+                            child: Text(snapshot.data.toString(),
+                                style: TextStyle(color: Colors.white)),
+                          )
+                        ],
+                      );
+                    }
+                  }
+                  return Text("Error");
+                },
+              ),
               FutureBuilder(
                 future: PartyName.getNameOfPartyById(this.receivedDO.consrcd),
                 builder: (context, snapshot) {
